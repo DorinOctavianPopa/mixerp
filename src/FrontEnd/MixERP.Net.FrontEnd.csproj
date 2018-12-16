@@ -385,6 +385,7 @@
     <Content Include="db\1.x\1.4\mixerp-patch-for-rc.sql" />
     <Content Include="db\blank-db.sql" />
     <Content Include="db\index.html" />
+    <Content Include="db\Microsoft SQL\blank-db.sql" />
     <Content Include="db\patch.sql" />
     <Content Include="db\sample-db.sql" />
     <Content Include="db\web.config" />
@@ -1403,15 +1404,13 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>2904</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44301/</IISUrl>
-          <OverrideIISAppRootUrl>True</OverrideIISAppRootUrl>
-          <IISAppRootUrl>http://localhost:8080</IISAppRootUrl>
+          <IISUrl>http://localhost:2904/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>True</UseCustomServer>
+          <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>http://localhost:8080</CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>

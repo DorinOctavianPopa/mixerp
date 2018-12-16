@@ -4,12 +4,13 @@ using MixERP.Net.Framework;
 using MixERP.Net.i18n;
 using MixERP.Net.i18n.Resources;
 using Npgsql;
+using System.Data.SqlClient;
 
 namespace PetaPoco
 {
     public sealed class Factory
     {
-        public const string ProviderName = "Npgsql";
+        public const string ProviderName = "System.Data.SqlClient"; //change provider to Microsoft SQL Server
         public static string MetaDatabase = ConfigurationHelper.GetDbServerParameter("MetaDatabase");
 
         public static IEnumerable<T> Get<T>(string catalog, string sql, params object[] args)
@@ -205,8 +206,23 @@ namespace PetaPoco
                 MaxPoolSize = 100,
                 ApplicationName = "MixERP"
             };
-
-            return connectionStringBuilder.ConnectionString;
+				
+				//Microsoft SQL Server Connection String Builder
+				if (ProviderName.Contains("SqlClient"))
+				{
+					var SQLconnectionStringBuilder = new SqlConnectionStringBuilder();
+					SQLconnectionStringBuilder.DataSource = ConfigurationHelper.GetDbServerParameter("Server");
+					SQLconnectionStringBuilder.InitialCatalog = database;
+					string integratedSecurity = ConfigurationHelper.GetDbServerParameter("IntegratedSecurity");
+					SQLconnectionStringBuilder.IntegratedSecurity = (integratedSecurity == "yes") ? true : false;
+					if(!SQLconnectionStringBuilder.IntegratedSecurity)
+					{
+						SQLconnectionStringBuilder.UserID = ConfigurationHelper.GetDbServerParameter("UserId");
+						SQLconnectionStringBuilder.Password = ConfigurationHelper.GetDbServerParameter("Password");
+					}
+					return SQLconnectionStringBuilder.ConnectionString;
+				}
+				return connectionStringBuilder.ConnectionString;
         }
     }
 }
