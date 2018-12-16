@@ -31,7 +31,7 @@ namespace MixERP.Net.Entities.Public.Meta
 
         public static void CreateTable()
         {
-            const string sql = @"DO
+            string sql = @"DO
                                 $$
                                 BEGIN
                                     IF NOT EXISTS (
@@ -59,8 +59,31 @@ namespace MixERP.Net.Entities.Public.Meta
                                 $$
                                 LANGUAGE plpgsql;
                                 ";
+				//Microsoft SQL Server
+				if (Factory.ProviderName.Contains("SqlClient"))
+				{
+					sql = @"IF NOT  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[sales_quotation_validation]') AND type in (N'U'))
+									BEGIN
+										CREATE TABLE [dbo].[sales_quotation_validation]
+																(
+																validation_id           varchar(50) NOT NULL PRIMARY KEY,
+																tran_id                 bigint NOT NULL,
+																catalog                 varchar(50) NOT NULL,
+																added_on                DATETIME NOT NULL DEFAULT(GETDATE()),
+																valid_till              DATETIME NOT NULL,
+																accepted                bit NOT NULL DEFAULT(0),
+																accepted_on             DATETIME
+																);
 
-            Factory.NonQuery(Factory.MetaDatabase, sql);
+										CREATE UNIQUE NONCLUSTERED INDEX IX_sales_quotation_validation ON dbo.sales_quotation_validation
+										(
+											tran_id,
+											catalog
+										) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+									END";
+				}
+				Factory.NonQuery(Factory.MetaDatabase, sql);
         }
     }
 }

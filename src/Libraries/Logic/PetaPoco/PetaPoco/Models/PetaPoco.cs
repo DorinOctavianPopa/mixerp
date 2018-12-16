@@ -486,6 +486,12 @@ namespace PetaPoco
             {
                 cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
             }
+				//Microsoft SQL Server
+				if(_dbType == DBType.SqlServer)
+				{
+				//Column with name "Key" is not allowed - replace with [Key]
+					cmd.CommandText = cmd.CommandText.Replace("key", "[key]");
+				}
 
             if (!String.IsNullOrEmpty(sql))
                 DoPreExecute(cmd);

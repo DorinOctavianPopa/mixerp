@@ -1,12 +1,15 @@
 ﻿using Npgsql;
 using System.Configuration;
 using System.Web.Hosting;
+using System.Data.SqlClient;
 
 namespace MixERP.Net.i18n
 {
     internal static class ConnectionStringHelper
     {
-        public static string GetConnectionString()
+
+			static public string DBProvider  = GetDbServerParameter("Provider").ToLower();
+			public static string GetConnectionString()
         {
             string host = GetDbServerParameter("Server");
             string database = GetDbServerParameter("Database");
@@ -14,10 +17,21 @@ namespace MixERP.Net.i18n
             string password = GetDbServerParameter("Password");
             int port = int.Parse(GetDbServerParameter("Port"));
 
-            return GetConnectionString(host, database, userId, password, port);
+				return GetConnectionString(host, database, userId, password, port);
         }
 
-        private static string GetDbServerParameter(string keyName)
+			public static string GetSqlConnectionString()
+			{
+				string host = GetDbServerParameter("Server");
+				string database = GetDbServerParameter("Database");
+				string userId = GetDbServerParameter("UserId");
+				string password = GetDbServerParameter("Password");
+				bool integratedSecurity = GetDbServerParameter("IntegratedSecurity").ToLower() == "yes" ? true : false;
+
+				return GetSQLConnectionString(host, database, userId, password, integratedSecurity);
+			}
+
+		private static string GetDbServerParameter(string keyName)
         {
             return GetConfigurationValue("DbServerConfigFileLocation", keyName);
         }
@@ -68,5 +82,30 @@ namespace MixERP.Net.i18n
 
             return connectionStringBuilder.ConnectionString;
         }
-    }
+
+			/// <summary>
+			/// Return SQL Connection String for Microsoft SQL Server
+			/// </summary>
+			/// <param name="host"></param>
+			/// <param name="database"></param>
+			/// <param name="username"></param>
+			/// <param name="password"></param>
+			/// <param name="integratedSecurity"></param>
+			/// <returns></returns>
+			private static string GetSQLConnectionString(string host, string database, string username, string password,
+				bool integratedSecurity)
+			{
+				SqlConnectionStringBuilder SQLconnectionStringBuilder = new SqlConnectionStringBuilder();
+				SQLconnectionStringBuilder.DataSource = host;
+				SQLconnectionStringBuilder.InitialCatalog = database;
+				SQLconnectionStringBuilder.IntegratedSecurity = integratedSecurity;
+				if (!SQLconnectionStringBuilder.IntegratedSecurity)
+				{
+					SQLconnectionStringBuilder.UserID = username;
+					SQLconnectionStringBuilder.Password = password;
+				}
+				SQLconnectionStringBuilder.ApplicationName = "MixERP";
+				return SQLconnectionStringBuilder.ConnectionString;
+			}
+	}
 }

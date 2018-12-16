@@ -19,7 +19,7 @@ namespace MixERP.Net.Entities.Office
 
         public static void CreateTable()
         {
-            const string sql = @"DO
+            string sql = @"DO
                                 $$
                                 BEGIN
                                     IF NOT EXISTS (
@@ -40,7 +40,18 @@ namespace MixERP.Net.Entities.Office
                                 END
                                 $$
                                 LANGUAGE plpgsql;";
-
+				if(Factory.ProviderName.Contains("SqlClient"))
+				{
+					sql = @"IF NOT  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[global_logins]') AND type in (N'U'))
+								BEGIN
+									CREATE TABLE [dbo].[global_logins]
+														 (
+															  global_login_id         bigint IDENTITY(1,1) NOT NULL PRIMARY KEY,
+															  [catalog]               text NOT NULL,
+															  login_id                bigint NOT NULL
+														 );
+								END";
+				}
             Factory.NonQuery(Factory.MetaDatabase, sql);
         }
     }
