@@ -20,6 +20,8 @@ To keep enchancing and improving MixERP, Frapid, and several other open source p
 |XVG|Verge|DT7WgdXboohvFDc7YMrJPmUWBfTcGWQWa5|
 
 ![MixERP Dashboard](https://raw.githubusercontent.com/mixerp/mixerp/master/screenshots/dashboard.png)
+# Update September 17, 2018
+- Start update project to work with Microsoft SQL Server 2014 and above.
 
 # Update September 29, 2017
 
