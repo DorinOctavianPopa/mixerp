@@ -391,6 +391,7 @@
     <Content Include="db\web.config" />
     <Content Include="Installation\Default.aspx" />
     <Content Include="Installation\regional\en-US\Retail Industry.sql" />
+    <Content Include="Installation\regional\en-US\Retail Industry PostGreSql.sql" />
     <Content Include="License.txt" />
     <Content Include="Modules\Default.aspx" />
     <Content Include="Modules\FirstSteps.aspx" />

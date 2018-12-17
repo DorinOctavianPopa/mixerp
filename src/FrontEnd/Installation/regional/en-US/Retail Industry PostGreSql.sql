@@ -1,4 +1,7 @@
-﻿
+﻿DO
+$$
+    DECLARE _country_id integer = 0;
+BEGIN
     INSERT INTO core.countries(country_code, country_name)
     SELECT 'AF', 'Afghanistan' UNION ALL 
     SELECT 'AX', 'Åland Islands' UNION ALL 
@@ -249,64 +252,62 @@
     SELECT 'YE', 'Yemen' UNION ALL 
     SELECT 'ZM', 'Zambia' UNION ALL 
     SELECT 'ZW', 'Zimbabwe';
-	
-	 DECLARE @country_id integer
 
-    SELECT @country_id = country_id  
+        SELECT country_id INTO _country_id
     FROM core.countries WHERE country_code='US';
 
     INSERT INTO core.states(state_code, state_name, country_id)
-    SELECT 'AL', 'Alabama', @country_id UNION ALL
-    SELECT 'AK', 'Alaska', @country_id UNION ALL
-    SELECT 'AZ', 'Arizona', @country_id UNION ALL
-    SELECT 'AR', 'Arkansas', @country_id UNION ALL
-    SELECT 'CA', 'California', @country_id UNION ALL
-    SELECT 'CO', 'Colorado', @country_id UNION ALL
-    SELECT 'CT', 'Connecticut', @country_id UNION ALL
-    SELECT 'DC', 'District of Columbia', @country_id UNION ALL
-    SELECT 'DE', 'Delaware', @country_id UNION ALL
-    SELECT 'FL', 'Florida', @country_id UNION ALL
-    SELECT 'GA', 'Georgia', @country_id UNION ALL
-    SELECT 'HI', 'Hawaii', @country_id UNION ALL
-    SELECT 'ID', 'Idaho', @country_id UNION ALL
-    SELECT 'IL', 'Illinois', @country_id UNION ALL
-    SELECT 'IN', 'Indiana', @country_id UNION ALL
-    SELECT 'IA', 'Iowa', @country_id UNION ALL
-    SELECT 'KS', 'Kansas', @country_id UNION ALL
-    SELECT 'KY', 'Kentucky', @country_id UNION ALL
-    SELECT 'LA', 'Louisiana', @country_id UNION ALL
-    SELECT 'ME', 'Maine', @country_id UNION ALL
-    SELECT 'MD', 'Maryland', @country_id UNION ALL
-    SELECT 'MA', 'Massachusetts', @country_id UNION ALL
-    SELECT 'MI', 'Michigan', @country_id UNION ALL
-    SELECT 'MN', 'Minnesota', @country_id UNION ALL
-    SELECT 'MS', 'Mississippi', @country_id UNION ALL
-    SELECT 'MO', 'Missouri', @country_id UNION ALL
-    SELECT 'MT', 'Montana', @country_id UNION ALL
-    SELECT 'NE', 'Nebraska', @country_id UNION ALL
-    SELECT 'NV', 'Nevada', @country_id UNION ALL
-    SELECT 'NH', 'New Hampshire', @country_id UNION ALL
-    SELECT 'NJ', 'New Jersey', @country_id UNION ALL
-    SELECT 'NM', 'New Mexico', @country_id UNION ALL
-    SELECT 'NY', 'New York', @country_id UNION ALL
-    SELECT 'NC', 'North Carolina', @country_id UNION ALL
-    SELECT 'ND', 'North Dakota', @country_id UNION ALL
-    SELECT 'OH', 'Ohio', @country_id UNION ALL
-    SELECT 'OK', 'Oklahoma', @country_id UNION ALL
-    SELECT 'OR', 'Oregon', @country_id UNION ALL
-    SELECT 'PA', 'Pennsylvania', @country_id UNION ALL
-    SELECT 'RI', 'Rhode Island', @country_id UNION ALL
-    SELECT 'SC', 'South Carolina', @country_id UNION ALL
-    SELECT 'SD', 'South Dakota', @country_id UNION ALL
-    SELECT 'TN', 'Tennessee', @country_id UNION ALL
-    SELECT 'TX', 'Texas', @country_id UNION ALL
-    SELECT 'UT', 'Utah', @country_id UNION ALL
-    SELECT 'VT', 'Vermont', @country_id UNION ALL
-    SELECT 'VA', 'Virginia', @country_id UNION ALL
-    SELECT 'WA', 'Washington', @country_id UNION ALL
-    SELECT 'WV', 'West Virginia', @country_id UNION ALL
-    SELECT 'WI', 'Wisconsin', @country_id UNION ALL
-    SELECT 'WY', 'Wyoming', @country_id;
+    SELECT 'AL', 'Alabama', _country_id UNION ALL
+    SELECT 'AK', 'Alaska', _country_id UNION ALL
+    SELECT 'AZ', 'Arizona', _country_id UNION ALL
+    SELECT 'AR', 'Arkansas', _country_id UNION ALL
+    SELECT 'CA', 'California', _country_id UNION ALL
+    SELECT 'CO', 'Colorado', _country_id UNION ALL
+    SELECT 'CT', 'Connecticut', _country_id UNION ALL
+    SELECT 'DC', 'District of Columbia', _country_id UNION ALL
+    SELECT 'DE', 'Delaware', _country_id UNION ALL
+    SELECT 'FL', 'Florida', _country_id UNION ALL
+    SELECT 'GA', 'Georgia', _country_id UNION ALL
+    SELECT 'HI', 'Hawaii', _country_id UNION ALL
+    SELECT 'ID', 'Idaho', _country_id UNION ALL
+    SELECT 'IL', 'Illinois', _country_id UNION ALL
+    SELECT 'IN', 'Indiana', _country_id UNION ALL
+    SELECT 'IA', 'Iowa', _country_id UNION ALL
+    SELECT 'KS', 'Kansas', _country_id UNION ALL
+    SELECT 'KY', 'Kentucky', _country_id UNION ALL
+    SELECT 'LA', 'Louisiana', _country_id UNION ALL
+    SELECT 'ME', 'Maine', _country_id UNION ALL
+    SELECT 'MD', 'Maryland', _country_id UNION ALL
+    SELECT 'MA', 'Massachusetts', _country_id UNION ALL
+    SELECT 'MI', 'Michigan', _country_id UNION ALL
+    SELECT 'MN', 'Minnesota', _country_id UNION ALL
+    SELECT 'MS', 'Mississippi', _country_id UNION ALL
+    SELECT 'MO', 'Missouri', _country_id UNION ALL
+    SELECT 'MT', 'Montana', _country_id UNION ALL
+    SELECT 'NE', 'Nebraska', _country_id UNION ALL
+    SELECT 'NV', 'Nevada', _country_id UNION ALL
+    SELECT 'NH', 'New Hampshire', _country_id UNION ALL
+    SELECT 'NJ', 'New Jersey', _country_id UNION ALL
+    SELECT 'NM', 'New Mexico', _country_id UNION ALL
+    SELECT 'NY', 'New York', _country_id UNION ALL
+    SELECT 'NC', 'North Carolina', _country_id UNION ALL
+    SELECT 'ND', 'North Dakota', _country_id UNION ALL
+    SELECT 'OH', 'Ohio', _country_id UNION ALL
+    SELECT 'OK', 'Oklahoma', _country_id UNION ALL
+    SELECT 'OR', 'Oregon', _country_id UNION ALL
+    SELECT 'PA', 'Pennsylvania', _country_id UNION ALL
+    SELECT 'RI', 'Rhode Island', _country_id UNION ALL
+    SELECT 'SC', 'South Carolina', _country_id UNION ALL
+    SELECT 'SD', 'South Dakota', _country_id UNION ALL
+    SELECT 'TN', 'Tennessee', _country_id UNION ALL
+    SELECT 'TX', 'Texas', _country_id UNION ALL
+    SELECT 'UT', 'Utah', _country_id UNION ALL
+    SELECT 'VT', 'Vermont', _country_id UNION ALL
+    SELECT 'VA', 'Virginia', _country_id UNION ALL
+    SELECT 'WA', 'Washington', _country_id UNION ALL
+    SELECT 'WV', 'West Virginia', _country_id UNION ALL
+    SELECT 'WI', 'Wisconsin', _country_id UNION ALL
+    SELECT 'WY', 'Wyoming', _country_id;
 
     INSERT INTO core.counties(county_code, county_name, state_id) VALUES
     ('1001', 'Autauga County', core.get_state_id_by_state_name('Alabama')),
@@ -3451,6 +3452,9 @@
     ('56041', 'Uinta County', core.get_state_id_by_state_name('Wyoming')),
     ('56043', 'Washakie County', core.get_state_id_by_state_name('Wyoming')),
     ('56045', 'Weston County', core.get_state_id_by_state_name('Wyoming'));        
+END
+$$
+LANGUAGE plpgsql;
 
 
 
@@ -3469,18 +3473,17 @@ SELECT -2,  'Closed'                                UNION ALL
 SELECT -1,  'Withdrawn'                             UNION ALL
 SELECT 0,   'Unverified'                            UNION ALL
 SELECT 1,   'Automatically Approved by Workflow'    UNION ALL
-SELECT 2,   'Approved'
-GO
+SELECT 2,   'Approved';
 
-EXEC policy.create_access_types 1,   'Read'
-EXEC policy.create_access_types 2,   'Create'
-EXEC policy.create_access_types 3,   'Edit'
-EXEC policy.create_access_types 4,   'Delete'
-EXEC policy.create_access_types 5,   'Create Filter'
-EXEC policy.create_access_types 6,   'Delete Filter'
-EXEC policy.create_access_types 7,   'Export'
-EXEC policy.create_access_types 8,   'Export Data'
-EXEC policy.create_access_types 9,  'Import Data'
+SELECT policy.create_access_types(1,   'Read');
+SELECT policy.create_access_types(2,   'Create');
+SELECT policy.create_access_types(3,   'Edit');
+SELECT policy.create_access_types(4,   'Delete');
+SELECT policy.create_access_types(5,   'Create Filter');
+SELECT policy.create_access_types(6,   'Delete Filter');
+SELECT policy.create_access_types(7,   'Export');
+SELECT policy.create_access_types(8,   'Export Data');
+SELECT policy.create_access_types(9,  'Import Data');
 
 INSERT INTO core.frequencies(frequency_id, frequency_code, frequency_name)
 SELECT 2, 'EOM', 'End of Month'                 UNION ALL
@@ -3494,47 +3497,47 @@ SELECT 2, 'PLA', 'Profit & Loss A/C' UNION ALL
 SELECT 3, 'OBS', 'Off Balance Sheet A/C';
 
 INSERT INTO core.account_masters(account_master_id, account_master_code, account_master_name, parent_account_master_id, normally_debit)
-SELECT 10100, 'CRA', 'Current Assets',                      1,      1    UNION ALL
-SELECT 10101, 'CAS', 'Cash A/C',                            10100,  1    UNION ALL
-SELECT 10102, 'CAB', 'Bank A/C',                            10100,  1    UNION ALL
-SELECT 10110, 'ACR', 'Accounts Receivable',                 10100,  1    UNION ALL
-SELECT 10200, 'FIA', 'Fixed Assets',                        1,      1    UNION ALL
-SELECT 10201, 'PPE', 'Property, Plants, and Equipments',    1,      1    UNION ALL
-SELECT 10300, 'OTA', 'Other Assets',                        1,      1    UNION ALL
-SELECT 15000, 'CRL', 'Current Liabilities',                 1,      0   UNION ALL
-SELECT 15010, 'ACP', 'Accounts Payable',                    15000,  0   UNION ALL
-SELECT 15011, 'SAP', 'Salary Payable',                      15000,  0   UNION ALL
-SELECT 15100, 'LTL', 'Long-Term Liabilities',               1,      0   UNION ALL
-SELECT 15200, 'SHE', 'Shareholders'' Equity',               1,      0   UNION ALL
-SELECT 15300, 'RET', 'Retained Earnings',                   15200,  0   UNION ALL
-SELECT 15400, 'DIP', 'Dividends Paid',                      15300,  0;
+SELECT 10100, 'CRA', 'Current Assets',                      1,      true    UNION ALL
+SELECT 10101, 'CAS', 'Cash A/C',                            10100,  true    UNION ALL
+SELECT 10102, 'CAB', 'Bank A/C',                            10100,  true    UNION ALL
+SELECT 10110, 'ACR', 'Accounts Receivable',                 10100,  true    UNION ALL
+SELECT 10200, 'FIA', 'Fixed Assets',                        1,      true    UNION ALL
+SELECT 10201, 'PPE', 'Property, Plants, and Equipments',    1,      true    UNION ALL
+SELECT 10300, 'OTA', 'Other Assets',                        1,      true    UNION ALL
+SELECT 15000, 'CRL', 'Current Liabilities',                 1,      false   UNION ALL
+SELECT 15010, 'ACP', 'Accounts Payable',                    15000,  false   UNION ALL
+SELECT 15011, 'SAP', 'Salary Payable',                      15000,  false   UNION ALL
+SELECT 15100, 'LTL', 'Long-Term Liabilities',               1,      false   UNION ALL
+SELECT 15200, 'SHE', 'Shareholders'' Equity',               1,      false   UNION ALL
+SELECT 15300, 'RET', 'Retained Earnings',                   15200,  false   UNION ALL
+SELECT 15400, 'DIP', 'Dividends Paid',                      15300,  false;
 
 
 INSERT INTO core.account_masters(account_master_id, account_master_code, account_master_name, parent_account_master_id, normally_debit)
-SELECT 20100, 'REV', 'Revenue',                           2,        0   UNION ALL
-SELECT 20200, 'NOI', 'Non Operating Income',              2,        0   UNION ALL
-SELECT 20300, 'FII', 'Financial Incomes',                 2,        0   UNION ALL
-SELECT 20301, 'DIR', 'Dividends Received',                20300,    0   UNION ALL
-SELECT 20400, 'COS', 'Cost of Sales',                     2,        1    UNION ALL
-SELECT 20500, 'DRC', 'Direct Costs',                      2,        1    UNION ALL
-SELECT 20600, 'ORX', 'Operating Expenses',                2,        1    UNION ALL
-SELECT 20700, 'FIX', 'Financial Expenses',                2,        1    UNION ALL
-SELECT 20701, 'INT', 'Interest Expenses',                 20700,    1    UNION ALL
-SELECT 20800, 'ITX', 'Income Tax Expenses',               2,        1;
+SELECT 20100, 'REV', 'Revenue',                           2,        false   UNION ALL
+SELECT 20200, 'NOI', 'Non Operating Income',              2,        false   UNION ALL
+SELECT 20300, 'FII', 'Financial Incomes',                 2,        false   UNION ALL
+SELECT 20301, 'DIR', 'Dividends Received',                20300,    false   UNION ALL
+SELECT 20400, 'COS', 'Cost of Sales',                     2,        true    UNION ALL
+SELECT 20500, 'DRC', 'Direct Costs',                      2,        true    UNION ALL
+SELECT 20600, 'ORX', 'Operating Expenses',                2,        true    UNION ALL
+SELECT 20700, 'FIX', 'Financial Expenses',                2,        true    UNION ALL
+SELECT 20701, 'INT', 'Interest Expenses',                 20700,    true    UNION ALL
+SELECT 20800, 'ITX', 'Income Tax Expenses',               2,        true;
 
 INSERT INTO core.cash_flow_headings(cash_flow_heading_id, cash_flow_heading_code, cash_flow_heading_name, cash_flow_heading_type, is_debit)
-SELECT 20001, 'CRC',    'Cash Receipts from Customers',                 'O',   1    UNION ALL
-SELECT 20002, 'CPS',    'Cash Paid to Suppliers',                       'O',   0   UNION ALL
-SELECT 20003, 'CPE',    'Cash Paid to Employees',                       'O',   0   UNION ALL
-SELECT 20004, 'IP',     'Interest Paid',                                'O',   0   UNION ALL
-SELECT 20005, 'ITP',    'Income Taxes Paid',                            'O',   0   UNION ALL
-SELECT 20006, 'SUS',    'Against Suspense Accounts',                    'O',   1   UNION ALL
-SELECT 30001, 'PSE',    'Proceeds from the Sale of Equipment',          'I',   1    UNION ALL
-SELECT 30002, 'DR',     'Dividends Received',                           'I',   1    UNION ALL
-SELECT 40001, 'DP',     'Dividends Paid',                               'F',   0;
+SELECT 20001, 'CRC',    'Cash Receipts from Customers',                 'O',   true    UNION ALL
+SELECT 20002, 'CPS',    'Cash Paid to Suppliers',                       'O',   false   UNION ALL
+SELECT 20003, 'CPE',    'Cash Paid to Employees',                       'O',   false   UNION ALL
+SELECT 20004, 'IP',     'Interest Paid',                                'O',   false   UNION ALL
+SELECT 20005, 'ITP',    'Income Taxes Paid',                            'O',   false   UNION ALL
+SELECT 20006, 'SUS',    'Against Suspense Accounts',                    'O',   true   UNION ALL
+SELECT 30001, 'PSE',    'Proceeds from the Sale of Equipment',          'I',   true    UNION ALL
+SELECT 30002, 'DR',     'Dividends Received',                           'I',   true    UNION ALL
+SELECT 40001, 'DP',     'Dividends Paid',                               'F',   false;
 
-UPDATE core.cash_flow_headings SET is_sales=1 WHERE cash_flow_heading_code='CRC';
-UPDATE core.cash_flow_headings SET is_purchase=1 WHERE cash_flow_heading_code='CPS';
+UPDATE core.cash_flow_headings SET is_sales=true WHERE cash_flow_heading_code='CRC';
+UPDATE core.cash_flow_headings SET is_purchase=true WHERE cash_flow_heading_code='CPS';
 
 INSERT INTO core.cash_flow_setup(cash_flow_heading_id, account_master_id)
 SELECT core.get_cash_flow_heading_id_by_cash_flow_heading_code('CRC'), core.get_account_master_id_by_account_master_code('ACR') UNION ALL --Cash Receipts from Customers/Accounts Receivable
@@ -3589,6 +3592,8 @@ WARNING
 END
 *****************************************************************************************************/
 
+DO
+$$
 BEGIN
     INSERT INTO core.flag_types(flag_type_name, background_color, foreground_color)
     SELECT 'Critical',      '#FA5882', '#FFFFFF'    UNION ALL
@@ -3604,10 +3609,10 @@ BEGIN
     SELECT 'CC', 'Customer Care';
 
     INSERT INTO office.roles(role_code,role_name, is_system)
-    SELECT 'SYST', 'System', 1;
+    SELECT 'SYST', 'System', true;
 
     INSERT INTO office.roles(role_code,role_name, is_admin)
-    SELECT 'ADMN', 'Administrators', 1;
+    SELECT 'ADMN', 'Administrators', true;
 
     INSERT INTO office.roles(role_code,role_name)
     SELECT 'USER', 'Users'                  UNION ALL
@@ -3725,8 +3730,8 @@ BEGIN
     SELECT core.get_tax_master_id_by_tax_master_code('UST'), 'IRS', 'Internal Revenue Service', core.get_country_id_by_country_code('US'), core.get_state_id_by_state_code('NY'), '11201', '2 Metro Tech', '1st floor', '', 'Brooklyn', '(718) 834-6559', '', '', 'http://www.irs.gov';
 
     INSERT INTO core.sales_tax_types(sales_tax_type_code, sales_tax_type_name, is_vat)
-    SELECT 'SAT',   'Sales Tax',            0   UNION ALL
-    SELECT 'VAT',   'Value Added Tax',      1;
+    SELECT 'SAT',   'Sales Tax',            false   UNION ALL
+    SELECT 'VAT',   'Value Added Tax',      true;
 
     INSERT INTO core.tax_exempt_types(tax_exempt_type_code, tax_exempt_type_name)
     SELECT 'EXI', 'Exempt (Item)' UNION ALL
@@ -3734,25 +3739,25 @@ BEGIN
     SELECT 'EXS', 'Exempt (Industry)' UNION ALL
     SELECT 'EXE', 'Exempt (Entity)';
 
-    EXEC core.create_card_type 1, 'CRC', 'Credit Card'
-    EXEC core.create_card_type 2, 'DRC', 'Debit Card'
-    EXEC core.create_card_type 3, 'CHC', 'Charge Card'
-    EXEC core.create_card_type 4, 'ATM', 'ATM Card'
-    EXEC core.create_card_type 5, 'SVC', 'Store-value Card'
-    EXEC core.create_card_type 6, 'FLC', 'Fleet Card'
-    EXEC core.create_card_type 7, 'GFC', 'Gift Card'
-    EXEC core.create_card_type 8, 'SCR', 'Scrip'
-    EXEC core.create_card_type 9, 'ELP', 'Electronic Purse'
+    PERFORM core.create_card_type(1, 'CRC', 'Credit Card');
+    PERFORM core.create_card_type(2, 'DRC', 'Debit Card');
+    PERFORM core.create_card_type(3, 'CHC', 'Charge Card');
+    PERFORM core.create_card_type(4, 'ATM', 'ATM Card');
+    PERFORM core.create_card_type(5, 'SVC', 'Store-value Card');
+    PERFORM core.create_card_type(6, 'FLC', 'Fleet Card');
+    PERFORM core.create_card_type(7, 'GFC', 'Gift Card');
+    PERFORM core.create_card_type(8, 'SCR', 'Scrip');
+    PERFORM core.create_card_type(9, 'ELP', 'Electronic Purse');
 
 
-    EXEC core.create_payment_card 'CR-VSA', 'Visa',                1
-    EXEC core.create_payment_card 'CR-AME', 'American Express',    1
-    EXEC core.create_payment_card 'CR-MAS', 'MasterCard',          1
-    EXEC core.create_payment_card 'DR-MAE', 'Maestro',             2
-    EXEC core.create_payment_card 'DR-MAS', 'MasterCard Debit',    2
-    EXEC core.create_payment_card 'DR-VSE', 'Visa Electron',       2
-    EXEC core.create_payment_card 'DR-VSD', 'Visa Debit',          2
-    EXEC core.create_payment_card 'DR-DEL', 'Delta',               2
+    PERFORM core.create_payment_card('CR-VSA', 'Visa',                1);
+    PERFORM core.create_payment_card('CR-AME', 'American Express',    1);
+    PERFORM core.create_payment_card('CR-MAS', 'MasterCard',          1);
+    PERFORM core.create_payment_card('DR-MAE', 'Maestro',             2);
+    PERFORM core.create_payment_card('DR-MAS', 'MasterCard Debit',    2);
+    PERFORM core.create_payment_card('DR-VSE', 'Visa Electron',       2);
+    PERFORM core.create_payment_card('DR-VSD', 'Visa Debit',          2);
+    PERFORM core.create_payment_card('DR-DEL', 'Delta',               2);
 
     INSERT INTO core.brands(brand_code, brand_name)
     SELECT 'DEF', 'Default';
@@ -3787,8 +3792,8 @@ BEGIN
     SELECT 'MM',    'Media Mail';
 
     INSERT INTO core.shipping_package_shapes(shipping_package_shape_code, is_rectangular, shipping_package_shape_name)
-    SELECT 'REC',   1,   'Rectangular Box Packaging'         UNION ALL
-    SELECT 'IRR',   0,  'Irregular Packaging';
+    SELECT 'REC',   true,   'Rectangular Box Packaging'         UNION ALL
+    SELECT 'IRR',   false,  'Irregular Packaging';
 
     INSERT INTO office.store_types(store_type_code,store_type_name)
     SELECT 'GOD', 'Godown'                              UNION ALL
@@ -3806,429 +3811,440 @@ BEGIN
     SELECT 'SAL', 'Sales & Billing'                     UNION ALL
     SELECT 'FIN', 'Finance & Accounting';
 
+    ALTER TABLE core.accounts
+    ALTER column currency_code DROP NOT NULL;
 
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  1,     '10000', 'Assets',                                                      1,  core.get_account_id_by_account_name('Balance Sheet A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10001', 'Current Assets',                                              1,  core.get_account_id_by_account_name('Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10102, '10100', 'Cash at Bank A/C',                                            1,  core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10102, '10110', 'Regular Checking Account',                                    0, core.get_account_id_by_account_name('Cash at Bank A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10102, '10120', 'Payroll Checking Account',                                    0, core.get_account_id_by_account_name('Cash at Bank A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10102, '10130', 'Savings Account',                                             0, core.get_account_id_by_account_name('Cash at Bank A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10102, '10140', 'Special Account',                                             0, core.get_account_id_by_account_name('Cash at Bank A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10101, '10200', 'Cash in Hand A/C',                                            1,  core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10300', 'Investments',                                                 0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10310', 'Short Term Investment',                                       0, core.get_account_id_by_account_name('Investments');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10320', 'Other Investments',                                           0, core.get_account_id_by_account_name('Investments');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10321', 'Investments-Money Market',                                    0, core.get_account_id_by_account_name('Other Investments');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10322', 'Bank Deposit Contract (Fixed Deposit)',                       0, core.get_account_id_by_account_name('Other Investments');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10323', 'Investments-Certificates of Deposit',                         0, core.get_account_id_by_account_name('Other Investments');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10110, '10400', 'Accounts Receivable',                                         0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10500', 'Other Receivables',                                           0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10501', 'Purchase Return (Receivables)',                               0, core.get_account_id_by_account_name('Other Receivables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10600', 'Allowance for Doubtful Accounts',                             0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10700', 'Inventory',                                                   1,  core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10720', 'Raw Materials Inventory',                                     1,  core.get_account_id_by_account_name('Inventory');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10730', 'Supplies Inventory',                                          1,  core.get_account_id_by_account_name('Inventory');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10740', 'Work in Progress Inventory',                                  1,  core.get_account_id_by_account_name('Inventory');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10750', 'Finished Goods Inventory',                                    1,  core.get_account_id_by_account_name('Inventory');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10800', 'Prepaid Expenses',                                            0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '10900', 'Employee Advances',                                           0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '11000', 'Notes Receivable-Current',                                    0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '11100', 'Prepaid Interest',                                            0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '11200', 'Accrued Incomes (Assets)',                                    0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '11300', 'Other Debtors',                                               0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10100, '11400', 'Other Current Assets',                                        0, core.get_account_id_by_account_name('Current Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12001', 'Noncurrent Assets',                                           1,  core.get_account_id_by_account_name('Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12100', 'Furniture and Fixtures',                                      0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10201, '12200', 'Plants & Equipments',                                         0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12300', 'Rental Property',                                             0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12400', 'Vehicles',                                                    0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12500', 'Intangibles',                                                 0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12600', 'Other Depreciable Properties',                                0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12700', 'Leasehold Improvements',                                      0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12800', 'Buildings',                                                   0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '12900', 'Building Improvements',                                       0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13000', 'Interior Decorations',                                        0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13100', 'Land',                                                        0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13200', 'Long Term Investments',                                       0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13300', 'Trade Debtors',                                               0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13400', 'Rental Debtors',                                              0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13500', 'Staff Debtors',                                               0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13600', 'Other Noncurrent Debtors',                                    0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13700', 'Other Financial Assets',                                      0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13710', 'Deposits Held',                                               0, core.get_account_id_by_account_name('Other Financial Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13800', 'Accumulated Depreciations',                                   0, core.get_account_id_by_account_name('Noncurrent Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13810', 'Accumulated Depreciation-Furniture and Fixtures',             0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13820', 'Accumulated Depreciation-Equipment',                          0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13830', 'Accumulated Depreciation-Vehicles',                           0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13840', 'Accumulated Depreciation-Other Depreciable Properties',       0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13850', 'Accumulated Depreciation-Leasehold',                          0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13860', 'Accumulated Depreciation-Buildings',                          0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13870', 'Accumulated Depreciation-Building Improvements',              0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10200, '13880', 'Accumulated Depreciation-Interior Decorations',               0, core.get_account_id_by_account_name('Accumulated Depreciations');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14001', 'Other Assets',                                                1,  core.get_account_id_by_account_name('Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14100', 'Other Assets-Deposits',                                       0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14200', 'Other Assets-Organization Costs',                             0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14300', 'Other Assets-Accumulated Amortization-Organization Costs',    0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14400', 'Notes Receivable-Non-current',                                0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14500', 'Other Non-current Assets',                                    0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  10300, '14600', 'Non-financial Assets',                                        0, core.get_account_id_by_account_name('Other Assets');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  1,     '20000', 'Liabilities',                                                 1,  core.get_account_id_by_account_name('Balance Sheet A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20001', 'Current Liabilities',                                         1,  core.get_account_id_by_account_name('Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15010, '20100', 'Accounts Payable',                                            0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20110', 'Shipping Charge Payable',                                     0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20200', 'Accrued Expenses',                                            0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20300', 'Wages Payable',                                               0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20400', 'Deductions Payable',                                          0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20500', 'Health Insurance Payable',                                    0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20600', 'Superannuation Payable',                                      0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20700', 'Tax Payables',                                                0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20701', 'Sales Return (Payables)',                                     0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20710', 'Sales Tax Payable',                                           0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20720', 'Federal Payroll Taxes Payable',                               0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20730', 'FUTA Tax Payable',                                            0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20740', 'State Payroll Taxes Payable',                                 0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20750', 'SUTA Payable',                                                0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20760', 'Local Payroll Taxes Payable',                                 0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20770', 'Income Taxes Payable',                                        0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20780', 'Other Taxes Payable',                                         0, core.get_account_id_by_account_name('Tax Payables');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20800', 'Employee Benefits Payable',                                   0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20810', 'Provision for Annual Leave',                                  0, core.get_account_id_by_account_name('Employee Benefits Payable');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20820', 'Provision for Long Service Leave',                            0, core.get_account_id_by_account_name('Employee Benefits Payable');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20830', 'Provision for Personal Leave',                                0, core.get_account_id_by_account_name('Employee Benefits Payable');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20840', 'Provision for Health Leave',                                  0, core.get_account_id_by_account_name('Employee Benefits Payable');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '20900', 'Current Portion of Long-term Debt',                           0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21000', 'Advance Incomes',                                             0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21010', 'Advance Sales Income',                                        0, core.get_account_id_by_account_name('Advance Incomes');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21020', 'Grant Received in Advance',                                   0, core.get_account_id_by_account_name('Advance Incomes');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21100', 'Deposits from Customers',                                     0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21200', 'Other Current Liabilities',                                   0, core.get_account_id_by_account_name('Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21210', 'Short Term Loan Payables',                                    0, core.get_account_id_by_account_name('Other Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21220', 'Short Term Hire-purchase Payables',                           0, core.get_account_id_by_account_name('Other Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21230', 'Short Term Lease Liability',                                  0, core.get_account_id_by_account_name('Other Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15000, '21240', 'Grants Repayable',                                            0, core.get_account_id_by_account_name('Other Current Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24001', 'Noncurrent Liabilities',                                      1,  core.get_account_id_by_account_name('Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24100', 'Notes Payable',                                               0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24200', 'Land Payable',                                                0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24300', 'Equipment Payable',                                           0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24400', 'Vehicles Payable',                                            0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24500', 'Lease Liability',                                             0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24600', 'Loan Payable',                                                0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24700', 'Hire-purchase Payable',                                       0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24800', 'Bank Loans Payable',                                          0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '24900', 'Deferred Revenue',                                            0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '25000', 'Other Long-term Liabilities',                                 0, core.get_account_id_by_account_name('Noncurrent Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15100, '25010', 'Long Term Employee Benefit Provision',                        0, core.get_account_id_by_account_name('Other Long-term Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28001', 'Equity',                                                      1,  core.get_account_id_by_account_name('Liabilities');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28100', 'Stated Capital',                                              0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28110', 'Founder Capital',                                             0, core.get_account_id_by_account_name('Stated Capital');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28120', 'Promoter Capital',                                            0, core.get_account_id_by_account_name('Stated Capital');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28130', 'Member Capital',                                              0, core.get_account_id_by_account_name('Stated Capital');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28200', 'Capital Surplus',                                             0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28210', 'Share Premium',                                               0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28220', 'Capital Redemption Reserves',                                 0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28230', 'Statutory Reserves',                                          0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28240', 'Asset Revaluation Reserves',                                  0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28250', 'Exchange Rate Fluctuation Reserves',                          0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28260', 'Capital Reserves Arising From Merger',                        0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28270', 'Capital Reserves Arising From Acuisition',                    0, core.get_account_id_by_account_name('Capital Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15300, '28300', 'Retained Surplus',                                            1,  core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15300, '28310', 'Accumulated Profits',                                         0, core.get_account_id_by_account_name('Retained Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15300, '28320', 'Accumulated Losses',                                          0, core.get_account_id_by_account_name('Retained Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15400, '28330', 'Dividends Declared (Common Stock)',                           0, core.get_account_id_by_account_name('Retained Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15400, '28340', 'Dividends Declared (Preferred Stock)',                        0, core.get_account_id_by_account_name('Retained Surplus');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28400', 'Treasury Stock',                                              0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28500', 'Current Year Surplus',                                        0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28600', 'General Reserves',                                            0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28700', 'Other Reserves',                                              0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28800', 'Dividends Payable (Common Stock)',                            0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  15200, '28900', 'Dividends Payable (Preferred Stock)',                         0, core.get_account_id_by_account_name('Equity');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  2,     '30000', 'Revenues',                                                    1,  core.get_account_id_by_account_name('Profit and Loss A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30100', 'Sales A/C',                                                  0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30200', 'Interest Income',                                            0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30300', 'Other Income',                                               0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30400', 'Finance Charge Income',                                      0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30500', 'Shipping Charges Reimbursed',                                0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30600', 'Sales Returns and Allowances',                               0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20100,  '30700', 'Purchase Discounts',                                         0, core.get_account_id_by_account_name('Revenues');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  2,     '40000', 'Expenses',                                                    1,  core.get_account_id_by_account_name('Profit and Loss A/C');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  2,     '40100', 'Purchase A/C',                                                0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20400,  '40200', 'Cost of Goods Sold',                                         0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40205', 'Product Cost',                                               0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40210', 'Raw Material Purchases',                                     0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40215', 'Direct Labor Costs',                                         0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40220', 'Indirect Labor Costs',                                       0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40225', 'Heat and Power',                                             0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40230', 'Commissions',                                                0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40235', 'Miscellaneous Factory Costs',                                0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40240', 'Cost of Goods Sold-Salaries and Wages',                      0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40245', 'Cost of Goods Sold-Contract Labor',                          0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40250', 'Cost of Goods Sold-Freight',                                 0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40255', 'Cost of Goods Sold-Other',                                   0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40260', 'Inventory Adjustments',                                      0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40265', 'Purchase Returns and Allowances',                            0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20500,  '40270', 'Sales Discounts',                                            0, core.get_account_id_by_account_name('Cost of Goods Sold');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40300', 'General Purchase Expenses',                                  0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40400', 'Advertising Expenses',                                       0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40500', 'Amortization Expenses',                                      0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40600', 'Auto Expenses',                                              0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40700', 'Bad Debt Expenses',                                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20700,  '40800', 'Bank Fees',                                                  0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '40900', 'Cash Over and Short',                                        0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41000', 'Charitable Contributions Expenses',                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20700,  '41100', 'Commissions and Fees Expenses',                              0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41200', 'Depreciation Expenses',                                      0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41300', 'Dues and Subscriptions Expenses',                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41400', 'Employee Benefit Expenses',                                  0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41410', 'Employee Benefit Expenses-Health Insurance',                 0, core.get_account_id_by_account_name('Employee Benefit Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41420', 'Employee Benefit Expenses-Pension Plans',                    0, core.get_account_id_by_account_name('Employee Benefit Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41430', 'Employee Benefit Expenses-Profit Sharing Plan',              0, core.get_account_id_by_account_name('Employee Benefit Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41440', 'Employee Benefit Expenses-Other',                            0, core.get_account_id_by_account_name('Employee Benefit Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41500', 'Freight Expenses',                                           0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20600,  '41600', 'Gifts Expenses',                                             0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20800,  '41700', 'Income Tax Expenses',                                        0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20800,  '41710', 'Income Tax Expenses-Federal',                                0, core.get_account_id_by_account_name('Income Tax Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD',  20800,  '41720', 'Income Tax Expenses-State',                                  0, core.get_account_id_by_account_name('Income Tax Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20800,  '41730', 'Income Tax Expenses-Local',                                  0, core.get_account_id_by_account_name('Income Tax Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '41800', 'Insurance Expenses',                                         0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '41810', 'Insurance Expenses-Product Liability',                       0, core.get_account_id_by_account_name('Insurance Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '41820', 'Insurance Expenses-Vehicle',                                 0, core.get_account_id_by_account_name('Insurance Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20701,  '41900', 'Interest Expenses',                                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42000', 'Laundry and Dry Cleaning Expenses',                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42100', 'Legal and Professional Expenses',                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42200', 'Licenses Expenses',                                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42300', 'Loss on NSF Checks',                                         0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42400', 'Maintenance Expenses',                                       0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42500', 'Meals and Entertainment Expenses',                           0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42600', 'Office Expenses',                                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42700', 'Payroll Tax Expenses',                                       0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20700,  '42800', 'Penalties and Fines Expenses',                               0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '42900', 'Other Taxe Expenses',                                        0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43000', 'Postage Expenses',                                           0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43100', 'Rent or Lease Expenses',                                     0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43200', 'Repair and Maintenance Expenses',                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43210', 'Repair and Maintenance Expenses-Office',                     0, core.get_account_id_by_account_name('Repair and Maintenance Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43220', 'Repair and Maintenance Expenses-Vehicle',                    0, core.get_account_id_by_account_name('Repair and Maintenance Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43300', 'Supplies Expenses-Office',                                   0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43400', 'Telephone Expenses',                                         0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43500', 'Training Expenses',                                          0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43600', 'Travel Expenses',                                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43700', 'Salary Expenses',                                            0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43800', 'Wages Expenses',                                             0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '43900', 'Utilities Expenses',                                         0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '44000', 'Other Expenses',                                             0, core.get_account_id_by_account_name('Expenses');
-    INSERT INTO core.accounts(currency_code, account_master_id,account_number,account_name, sys_type, parent_account_id) 
-    SELECT 'USD', 20600,  '44100', 'Gain/Loss on Sale of Assets',                                0, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 1,     '10000', 'Assets',                                                      TRUE,  core.get_account_id_by_account_name('Balance Sheet A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10001', 'Current Assets',                                              TRUE,  core.get_account_id_by_account_name('Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10102, '10100', 'Cash at Bank A/C',                                            TRUE,  core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10102, '10110', 'Regular Checking Account',                                    FALSE, core.get_account_id_by_account_name('Cash at Bank A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10102, '10120', 'Payroll Checking Account',                                    FALSE, core.get_account_id_by_account_name('Cash at Bank A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10102, '10130', 'Savings Account',                                             FALSE, core.get_account_id_by_account_name('Cash at Bank A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10102, '10140', 'Special Account',                                             FALSE, core.get_account_id_by_account_name('Cash at Bank A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10101, '10200', 'Cash in Hand A/C',                                            TRUE,  core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10300', 'Investments',                                                 FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10310', 'Short Term Investment',                                       FALSE, core.get_account_id_by_account_name('Investments');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10320', 'Other Investments',                                           FALSE, core.get_account_id_by_account_name('Investments');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10321', 'Investments-Money Market',                                    FALSE, core.get_account_id_by_account_name('Other Investments');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10322', 'Bank Deposit Contract (Fixed Deposit)',                       FALSE, core.get_account_id_by_account_name('Other Investments');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10323', 'Investments-Certificates of Deposit',                         FALSE, core.get_account_id_by_account_name('Other Investments');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10110, '10400', 'Accounts Receivable',                                         FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10500', 'Other Receivables',                                           FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10501', 'Purchase Return (Receivables)',                               FALSE, core.get_account_id_by_account_name('Other Receivables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10600', 'Allowance for Doubtful Accounts',                             FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10700', 'Inventory',                                                   TRUE,  core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10720', 'Raw Materials Inventory',                                     TRUE,  core.get_account_id_by_account_name('Inventory');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10730', 'Supplies Inventory',                                          TRUE,  core.get_account_id_by_account_name('Inventory');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10740', 'Work in Progress Inventory',                                  TRUE,  core.get_account_id_by_account_name('Inventory');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10750', 'Finished Goods Inventory',                                    TRUE,  core.get_account_id_by_account_name('Inventory');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10800', 'Prepaid Expenses',                                            FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '10900', 'Employee Advances',                                           FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '11000', 'Notes Receivable-Current',                                    FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '11100', 'Prepaid Interest',                                            FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '11200', 'Accrued Incomes (Assets)',                                    FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '11300', 'Other Debtors',                                               FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10100, '11400', 'Other Current Assets',                                        FALSE, core.get_account_id_by_account_name('Current Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12001', 'Noncurrent Assets',                                           TRUE,  core.get_account_id_by_account_name('Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12100', 'Furniture and Fixtures',                                      FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10201, '12200', 'Plants & Equipments',                                         FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12300', 'Rental Property',                                             FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12400', 'Vehicles',                                                    FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12500', 'Intangibles',                                                 FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12600', 'Other Depreciable Properties',                                FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12700', 'Leasehold Improvements',                                      FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12800', 'Buildings',                                                   FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '12900', 'Building Improvements',                                       FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13000', 'Interior Decorations',                                        FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13100', 'Land',                                                        FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13200', 'Long Term Investments',                                       FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13300', 'Trade Debtors',                                               FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13400', 'Rental Debtors',                                              FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13500', 'Staff Debtors',                                               FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13600', 'Other Noncurrent Debtors',                                    FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13700', 'Other Financial Assets',                                      FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13710', 'Deposits Held',                                               FALSE, core.get_account_id_by_account_name('Other Financial Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13800', 'Accumulated Depreciations',                                   FALSE, core.get_account_id_by_account_name('Noncurrent Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13810', 'Accumulated Depreciation-Furniture and Fixtures',             FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13820', 'Accumulated Depreciation-Equipment',                          FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13830', 'Accumulated Depreciation-Vehicles',                           FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13840', 'Accumulated Depreciation-Other Depreciable Properties',       FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13850', 'Accumulated Depreciation-Leasehold',                          FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13860', 'Accumulated Depreciation-Buildings',                          FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13870', 'Accumulated Depreciation-Building Improvements',              FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10200, '13880', 'Accumulated Depreciation-Interior Decorations',               FALSE, core.get_account_id_by_account_name('Accumulated Depreciations');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14001', 'Other Assets',                                                TRUE,  core.get_account_id_by_account_name('Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14100', 'Other Assets-Deposits',                                       FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14200', 'Other Assets-Organization Costs',                             FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14300', 'Other Assets-Accumulated Amortization-Organization Costs',    FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14400', 'Notes Receivable-Non-current',                                FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14500', 'Other Non-current Assets',                                    FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 10300, '14600', 'Non-financial Assets',                                        FALSE, core.get_account_id_by_account_name('Other Assets');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 1,     '20000', 'Liabilities',                                                 TRUE,  core.get_account_id_by_account_name('Balance Sheet A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20001', 'Current Liabilities',                                         TRUE,  core.get_account_id_by_account_name('Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15010, '20100', 'Accounts Payable',                                            FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20110', 'Shipping Charge Payable',                                     FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20200', 'Accrued Expenses',                                            FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20300', 'Wages Payable',                                               FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20400', 'Deductions Payable',                                          FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20500', 'Health Insurance Payable',                                    FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20600', 'Superannuation Payable',                                      FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20700', 'Tax Payables',                                                FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20701', 'Sales Return (Payables)',                                     FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20710', 'Sales Tax Payable',                                           FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20720', 'Federal Payroll Taxes Payable',                               FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20730', 'FUTA Tax Payable',                                            FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20740', 'State Payroll Taxes Payable',                                 FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20750', 'SUTA Payable',                                                FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20760', 'Local Payroll Taxes Payable',                                 FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20770', 'Income Taxes Payable',                                        FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20780', 'Other Taxes Payable',                                         FALSE, core.get_account_id_by_account_name('Tax Payables');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20800', 'Employee Benefits Payable',                                   FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20810', 'Provision for Annual Leave',                                  FALSE, core.get_account_id_by_account_name('Employee Benefits Payable');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20820', 'Provision for Long Service Leave',                            FALSE, core.get_account_id_by_account_name('Employee Benefits Payable');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20830', 'Provision for Personal Leave',                                FALSE, core.get_account_id_by_account_name('Employee Benefits Payable');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20840', 'Provision for Health Leave',                                  FALSE, core.get_account_id_by_account_name('Employee Benefits Payable');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '20900', 'Current Portion of Long-term Debt',                           FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21000', 'Advance Incomes',                                             FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21010', 'Advance Sales Income',                                        FALSE, core.get_account_id_by_account_name('Advance Incomes');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21020', 'Grant Received in Advance',                                   FALSE, core.get_account_id_by_account_name('Advance Incomes');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21100', 'Deposits from Customers',                                     FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21200', 'Other Current Liabilities',                                   FALSE, core.get_account_id_by_account_name('Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21210', 'Short Term Loan Payables',                                    FALSE, core.get_account_id_by_account_name('Other Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21220', 'Short Term Hire-purchase Payables',                           FALSE, core.get_account_id_by_account_name('Other Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21230', 'Short Term Lease Liability',                                  FALSE, core.get_account_id_by_account_name('Other Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15000, '21240', 'Grants Repayable',                                            FALSE, core.get_account_id_by_account_name('Other Current Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24001', 'Noncurrent Liabilities',                                      TRUE,  core.get_account_id_by_account_name('Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24100', 'Notes Payable',                                               FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24200', 'Land Payable',                                                FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24300', 'Equipment Payable',                                           FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24400', 'Vehicles Payable',                                            FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24500', 'Lease Liability',                                             FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24600', 'Loan Payable',                                                FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24700', 'Hire-purchase Payable',                                       FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24800', 'Bank Loans Payable',                                          FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '24900', 'Deferred Revenue',                                            FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '25000', 'Other Long-term Liabilities',                                 FALSE, core.get_account_id_by_account_name('Noncurrent Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15100, '25010', 'Long Term Employee Benefit Provision',                        FALSE, core.get_account_id_by_account_name('Other Long-term Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28001', 'Equity',                                                      TRUE,  core.get_account_id_by_account_name('Liabilities');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28100', 'Stated Capital',                                              FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28110', 'Founder Capital',                                             FALSE, core.get_account_id_by_account_name('Stated Capital');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28120', 'Promoter Capital',                                            FALSE, core.get_account_id_by_account_name('Stated Capital');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28130', 'Member Capital',                                              FALSE, core.get_account_id_by_account_name('Stated Capital');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28200', 'Capital Surplus',                                             FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28210', 'Share Premium',                                               FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28220', 'Capital Redemption Reserves',                                 FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28230', 'Statutory Reserves',                                          FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28240', 'Asset Revaluation Reserves',                                  FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28250', 'Exchange Rate Fluctuation Reserves',                          FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28260', 'Capital Reserves Arising From Merger',                        FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28270', 'Capital Reserves Arising From Acuisition',                    FALSE, core.get_account_id_by_account_name('Capital Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15300, '28300', 'Retained Surplus',                                            TRUE,  core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15300, '28310', 'Accumulated Profits',                                         FALSE, core.get_account_id_by_account_name('Retained Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15300, '28320', 'Accumulated Losses',                                          FALSE, core.get_account_id_by_account_name('Retained Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15400, '28330', 'Dividends Declared (Common Stock)',                           FALSE, core.get_account_id_by_account_name('Retained Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15400, '28340', 'Dividends Declared (Preferred Stock)',                        FALSE, core.get_account_id_by_account_name('Retained Surplus');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28400', 'Treasury Stock',                                              FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28500', 'Current Year Surplus',                                        FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28600', 'General Reserves',                                            FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28700', 'Other Reserves',                                              FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28800', 'Dividends Payable (Common Stock)',                            FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 15200, '28900', 'Dividends Payable (Preferred Stock)',                         FALSE, core.get_account_id_by_account_name('Equity');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 2,     '30000', 'Revenues',                                                    TRUE,  core.get_account_id_by_account_name('Profit and Loss A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30100', 'Sales A/C',                                                  FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30200', 'Interest Income',                                            FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30300', 'Other Income',                                               FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30400', 'Finance Charge Income',                                      FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30500', 'Shipping Charges Reimbursed',                                FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30600', 'Sales Returns and Allowances',                               FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20100,  '30700', 'Purchase Discounts',                                         FALSE, core.get_account_id_by_account_name('Revenues');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 2,     '40000', 'Expenses',                                                    TRUE,  core.get_account_id_by_account_name('Profit and Loss A/C');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 2,     '40100', 'Purchase A/C',                                                FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20400,  '40200', 'Cost of Goods Sold',                                         FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40205', 'Product Cost',                                               FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40210', 'Raw Material Purchases',                                     FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40215', 'Direct Labor Costs',                                         FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40220', 'Indirect Labor Costs',                                       FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40225', 'Heat and Power',                                             FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40230', 'Commissions',                                                FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40235', 'Miscellaneous Factory Costs',                                FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40240', 'Cost of Goods Sold-Salaries and Wages',                      FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40245', 'Cost of Goods Sold-Contract Labor',                          FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40250', 'Cost of Goods Sold-Freight',                                 FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40255', 'Cost of Goods Sold-Other',                                   FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40260', 'Inventory Adjustments',                                      FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40265', 'Purchase Returns and Allowances',                            FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20500,  '40270', 'Sales Discounts',                                            FALSE, core.get_account_id_by_account_name('Cost of Goods Sold');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40300', 'General Purchase Expenses',                                  FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40400', 'Advertising Expenses',                                       FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40500', 'Amortization Expenses',                                      FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40600', 'Auto Expenses',                                              FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40700', 'Bad Debt Expenses',                                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20700,  '40800', 'Bank Fees',                                                  FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '40900', 'Cash Over and Short',                                        FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41000', 'Charitable Contributions Expenses',                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20700,  '41100', 'Commissions and Fees Expenses',                              FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41200', 'Depreciation Expenses',                                      FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41300', 'Dues and Subscriptions Expenses',                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41400', 'Employee Benefit Expenses',                                  FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41410', 'Employee Benefit Expenses-Health Insurance',                 FALSE, core.get_account_id_by_account_name('Employee Benefit Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41420', 'Employee Benefit Expenses-Pension Plans',                    FALSE, core.get_account_id_by_account_name('Employee Benefit Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41430', 'Employee Benefit Expenses-Profit Sharing Plan',              FALSE, core.get_account_id_by_account_name('Employee Benefit Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41440', 'Employee Benefit Expenses-Other',                            FALSE, core.get_account_id_by_account_name('Employee Benefit Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41500', 'Freight Expenses',                                           FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41600', 'Gifts Expenses',                                             FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20800,  '41700', 'Income Tax Expenses',                                        FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20800,  '41710', 'Income Tax Expenses-Federal',                                FALSE, core.get_account_id_by_account_name('Income Tax Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20800,  '41720', 'Income Tax Expenses-State',                                  FALSE, core.get_account_id_by_account_name('Income Tax Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20800,  '41730', 'Income Tax Expenses-Local',                                  FALSE, core.get_account_id_by_account_name('Income Tax Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41800', 'Insurance Expenses',                                         FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41810', 'Insurance Expenses-Product Liability',                       FALSE, core.get_account_id_by_account_name('Insurance Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '41820', 'Insurance Expenses-Vehicle',                                 FALSE, core.get_account_id_by_account_name('Insurance Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20701,  '41900', 'Interest Expenses',                                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42000', 'Laundry and Dry Cleaning Expenses',                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42100', 'Legal and Professional Expenses',                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42200', 'Licenses Expenses',                                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42300', 'Loss on NSF Checks',                                         FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42400', 'Maintenance Expenses',                                       FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42500', 'Meals and Entertainment Expenses',                           FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42600', 'Office Expenses',                                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42700', 'Payroll Tax Expenses',                                       FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20700,  '42800', 'Penalties and Fines Expenses',                               FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '42900', 'Other Taxe Expenses',                                        FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43000', 'Postage Expenses',                                           FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43100', 'Rent or Lease Expenses',                                     FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43200', 'Repair and Maintenance Expenses',                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43210', 'Repair and Maintenance Expenses-Office',                     FALSE, core.get_account_id_by_account_name('Repair and Maintenance Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43220', 'Repair and Maintenance Expenses-Vehicle',                    FALSE, core.get_account_id_by_account_name('Repair and Maintenance Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43300', 'Supplies Expenses-Office',                                   FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43400', 'Telephone Expenses',                                         FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43500', 'Training Expenses',                                          FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43600', 'Travel Expenses',                                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43700', 'Salary Expenses',                                            FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43800', 'Wages Expenses',                                             FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '43900', 'Utilities Expenses',                                         FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '44000', 'Other Expenses',                                             FALSE, core.get_account_id_by_account_name('Expenses');
+    INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id) 
+    SELECT 20600,  '44100', 'Gain/Loss on Sale of Assets',                                FALSE, core.get_account_id_by_account_name('Expenses');
 
-    
+    UPDATE core.accounts
+    SET currency_code='USD';
+
+
+    ALTER TABLE core.accounts
+    ALTER column currency_code SET NOT NULL;
+
+
+
+
     INSERT INTO core.state_sales_taxes(state_sales_tax_code, state_sales_tax_name, state_id, rate) VALUES
     ('AL-STT', 'Alabama State Tax',             core.get_state_id_by_state_name('Alabama'),                 4), 
     ('AZ-STT', 'Arizona State Tax',             core.get_state_id_by_state_name('Arizona'),                 5.6), 
@@ -4289,7 +4305,7 @@ BEGIN
     SELECT 'D', 'Dealer', core.get_account_id_by_account_number('10400');
     
     INSERT INTO core.party_types(party_type_code, party_type_name, is_supplier, account_id)
-    SELECT 'S', 'Supplier', 1, core.get_account_id_by_account_number('20100');
+    SELECT 'S', 'Supplier', true, core.get_account_id_by_account_number('20100');
 
     INSERT INTO core.shippers(company_name, account_id)
     SELECT 'Default', core.get_account_id_by_account_number('20110');
@@ -4325,9 +4341,9 @@ BEGIN
     SELECT 'O', 'Other';
     
     INSERT INTO core.identification_types
-    SELECT 'DVL', 'Driving License', 1 UNION ALL
-    SELECT 'SSN', 'Social Security Number', 0 UNION ALL
-    SELECT 'PAS', 'Passport Number', 1;
+    SELECT 'DVL', 'Driving License', true UNION ALL
+    SELECT 'SSN', 'Social Security Number', false UNION ALL
+    SELECT 'PAS', 'Passport Number', true;
 
     INSERT INTO core.social_networks(social_network_name, semantic_css_class, base_url, profile_url)
     SELECT 'Twitter',   'twitter',      'https://twitter.com/',             'https://twitter.com/{0}' UNION ALL
@@ -4349,15 +4365,15 @@ BEGIN
     SELECT 5, 'THU', 'Thursday' UNION ALL
     SELECT 6, 'FRI', 'Firday' UNION ALL
     SELECT 7, 'SAT', 'Saturday';
-
+END
+$$
+LANGUAGE plpgsql;
 
 INSERT INTO core.marital_statuses(marital_status_code, marital_status_name, is_legally_recognized_marriage)
-SELECT 'NEM', 'Never Married',          0   UNION ALL
-SELECT 'SEP', 'Separated',              0   UNION ALL
-SELECT 'MAR', 'Married',                1    UNION ALL
-SELECT 'LIV', 'Living Relationship',    0   UNION ALL
-SELECT 'DIV', 'Divorced',               0   UNION ALL
-SELECT 'WID', 'Widower',                0   UNION ALL
-SELECT 'CIV', 'Civil Union',            1;
-
-GO
+SELECT 'NEM', 'Never Married',          false   UNION ALL
+SELECT 'SEP', 'Separated',              false   UNION ALL
+SELECT 'MAR', 'Married',                true    UNION ALL
+SELECT 'LIV', 'Living Relationship',    false   UNION ALL
+SELECT 'DIV', 'Divorced',               false   UNION ALL
+SELECT 'WID', 'Widower',                false   UNION ALL
+SELECT 'CIV', 'Civil Union',            true;

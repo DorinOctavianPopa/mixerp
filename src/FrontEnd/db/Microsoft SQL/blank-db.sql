@@ -1,5 +1,58 @@
 ﻿USE [mixerp]
 GO
+CREATE SCHEMA [crm]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[crm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[crm] TO [public]
+GO
+
+USE [mixerp]
+GO
 CREATE SCHEMA [config] AUTHORIZATION [public]
 GO
 use [mixerp]
@@ -209,6 +262,58 @@ GO
 use [mixerp]
 GO
 GRANT VIEW DEFINITION ON SCHEMA::[office] TO [public]
+GO
+USE [mixerp]
+GO
+CREATE SCHEMA [policy]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[policy] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[policy] TO [public]
 GO
 
 
@@ -15942,7 +16047,7 @@ CREATE TABLE office.offices
 	primary_sales_tax_is_vat				bit NOT NULL DEFAULT(0),
 	has_state_sales_tax						bit NOT NULL DEFAULT(0),
 	has_county_sales_tax					bit NOT NULL DEFAULT(0),
-	logo_file								image NOT NULL,
+	logo_file								varchar(500) NOT NULL,
 	income_tax_rate							decimal(18,2) NOT NULL,
 	transaction_start_date					datetime NOT NULL DEFAULT(GETDATE()),
 	week_start_day							int NOT NULL CHECK (week_start_day > 0 AND week_start_day < 8) DEFAULT(2),
@@ -16075,7 +16180,7 @@ GO
 
 CREATE TABLE office.configuration
 (
-    configuration_id                        int PRIMARY KEY,
+    configuration_id                        int IDENTITY(1,1) PRIMARY KEY,
     config_id                               integer REFERENCES core.config(config_id),
     office_id                               integer NOT NULL,
     value                                   varchar(500) NOT NULL,
@@ -16084,6 +16189,164 @@ CREATE TABLE office.configuration
     audit_ts                                datetime NULL DEFAULT(GETDATE())    
 )
 GO
+
+CREATE TABLE office.roles
+(
+    role_id                                 integer IDENTITY(1,1) PRIMARY KEY,
+    role_code                               varchar(12) NOT NULL,
+    role_name                               varchar(50) NOT NULL,
+    is_admin                                bit NOT NULL CONSTRAINT roles_is_admin_df DEFAULT(0),
+    is_system                               bit NOT NULL 
+                                            CONSTRAINT roles_is_system_df DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX roles_role_code_uix
+ON office.roles(role_code)
+GO
+
+CREATE UNIQUE INDEX roles_role_name_uix
+ON office.roles(role_name)
+GO
+
+CREATE UNIQUE INDEX users_user_name_uix
+ON office.users(user_name)
+GO
+
+CREATE FUNCTION office.get_role_id_by_role_code(@role_code varchar(12))
+RETURNS integer
+AS
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret = role_id  FROM office.roles WHERE role_code=@role_code
+	RETURN @ret
+END
+GO
+
+CREATE TABLE office.departments
+(
+    department_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    department_code                         varchar(12) NOT NULL,
+    department_name                         varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+ALTER TABLE office.users
+ADD CONSTRAINT users_departments_fk 
+FOREIGN KEY(department_id)
+REFERENCES office.departments(department_id)
+GO
+
+CREATE FUNCTION office.get_department_id_by_department_code(@department_code varchar(12))
+RETURNS integer
+AS
+BEGIN
+	DECLARE @ret integer
+	SELECT @ret = department_id FROM office.departments WHERE department_code=@department_code;
+	RETURN @ret
+END
+GO
+
+CREATE TABLE policy.auto_verification_policy
+(
+    user_id                                 integer REFERENCES office.users(user_id) NOT NULL,
+	 office_id										  integer REFERENCES office.offices(office_id) NOT NULL,
+    verify_sales_transactions               bit NOT NULL   
+                                            CONSTRAINT auto_verification_policy_verify_sales_df   
+                                            DEFAULT(0),
+    sales_verification_limit                money NOT NULL   
+                                            CONSTRAINT auto_verification_policy_sales_verification_limit_df   
+                                            DEFAULT(0),
+    verify_purchase_transactions            bit NOT NULL   
+                                            CONSTRAINT auto_verification_policy_verify_purchase_df   
+                                            DEFAULT(0),
+    purchase_verification_limit             money NOT NULL   
+                                            CONSTRAINT auto_verification_policy_purchase_verification_limit_df   
+                                            DEFAULT(0),
+    verify_gl_transactions                  bit NOT NULL   
+                                            CONSTRAINT auto_verification_policy_verify_gl_df   
+                                            DEFAULT(0),
+    gl_verification_limit                   money NOT NULL   
+                                            CONSTRAINT auto_verification_policy_gl_verification_limit_df   
+                                            DEFAULT(0),
+    effective_from                          datetime NOT NULL,
+    ends_on                                 datetime NOT NULL,
+    is_active                               bit NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+ALTER TABLE policy.auto_verification_policy ADD PRIMARY KEY(user_id, office_id)
+GO
+
+CREATE TABLE core.fiscal_year
+(
+    fiscal_year_code                        varchar(12) PRIMARY KEY,
+    fiscal_year_name                        varchar(50) NOT NULL,
+    starts_from                             datetime NOT NULL,
+    ends_on                                 datetime NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX fiscal_year_fiscal_year_name_uix
+ON core.fiscal_year(fiscal_year_name)
+GO
+
+CREATE UNIQUE INDEX fiscal_year_starts_from_uix
+ON core.fiscal_year(starts_from)
+GO
+
+CREATE UNIQUE INDEX fiscal_year_ends_on_uix
+ON core.fiscal_year(ends_on)
+GO
+
+CREATE TABLE core.menus
+(
+    menu_id                                 integer IDENTITY(1,1) PRIMARY KEY,
+    menu_text                               varchar(250) NOT NULL,
+    url                                     varchar(250) NULL,
+    menu_code                               varchar(12) NOT NULL,
+    level                                   smallint NOT NULL,
+    parent_menu_id                          integer NULL REFERENCES core.menus(menu_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX menus_menu_code_uix
+ON core.menus(menu_code)
+GO
+
+CREATE TABLE core.menu_locale
+(
+    menu_locale_id                          integer IDENTITY(1,1) PRIMARY KEY,
+    menu_id                                 integer NOT NULL REFERENCES core.menus(menu_id),
+    culture                                 varchar(12) NOT NULL,
+    menu_text                               varchar(250) NOT NULL
+)
+GO
+
+CREATE UNIQUE INDEX menu_locale_menu_id_culture_uix
+ON core.menu_locale(menu_id,culture)
+GO
+
+CREATE TABLE policy.menu_access
+(
+    access_id                               bigint IDENTITY(1,1) PRIMARY KEY,
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    menu_id                                 integer NOT NULL REFERENCES core.menus(menu_id),
+    user_id                                 integer NULL REFERENCES office.users(user_id)   
+)
+GO
+
 
 CREATE PROCEDURE office.add_office
 (
@@ -16108,7 +16371,7 @@ CREATE PROCEDURE office.add_office
     @transaction_start_date date,
     @is_perpetual           bit,
     @inv_valuation_method   varchar(5),
-    @logo_file              image,
+    @logo_file              varchar(500),
     @admin_name             varchar(100),
     @user_name              varchar(50),
     @password               varchar(48)
@@ -16117,10 +16380,11 @@ AS
 BEGIN
     IF @starts_from > @ends_on 
 	BEGIN
-        RAISEERROR('The start date cannot be greater than end date.',16,1)
+        RAISERROR('The start date cannot be greater than end date.',0,1)
     END
 
 	DECLARE @inventory_system varchar(50)
+	SET @inventory_system = '';
     IF(@is_perpetual = 0) BEGIN
         SET @inventory_system = 'Periodic'
     END
@@ -16150,9 +16414,7 @@ BEGIN
         INSERT INTO office.configuration(config_id, office_id, value, configuration_details) VALUES(1, @office_id, @inventory_system, '')
     END
 
-	DECLARE @quotation_valid_days integer
-
-    IF(COALESCE(_quotation_valid_days, 0) = 0) BEGIN
+    IF(COALESCE(@quotation_valid_days, 0) = 0) BEGIN
         SET @quotation_valid_days = 15
     END 
     
@@ -16181,13 +16443,15 @@ BEGIN
     END
     
     IF NOT EXISTS(SELECT 0 FROM office.users WHERE user_name='sys') BEGIN
-        INSERT INTO office.users(role_id, department_id, office_id, user_name, password, full_name)
-        SELECT office.get_role_id_by_role_code('SYST'), office.get_department_id_by_department_code('SUP'), @office_id, 'sys', '', 'System';
-    END IF;
+        INSERT INTO office.users(role_id, department_id, office_id, user_name, password, full_name) VALUES
+        (office.get_role_id_by_role_code('SYST'), office.get_department_id_by_department_code('SUP'), @office_id, 'sys', '', 'System')
+    END 
         
     INSERT INTO office.users(role_id, department_id, office_id,user_name,password, full_name, elevated)
-    SELECT office.get_role_id_by_role_code('ADMN'), office.get_department_id_by_department_code('SUP'), _office_id, _user_name, _password, _admin_name, true
-    RETURNING user_id INTO _user_id;
+    VALUES (office.get_role_id_by_role_code('ADMN'), office.get_department_id_by_department_code('SUP'), @office_id, @user_name, @password, @admin_name, 1)
+
+	DECLARE @user_id integer
+	SELECT @user_id=@@IDENTITY
 
     INSERT INTO policy.auto_verification_policy
     (
@@ -16203,28 +16467,1100 @@ BEGIN
         ends_on,
         is_active
     )
-    SELECT 
-        _office_id,
-        _user_id,
-        true,
+    VALUES( 
+        @office_id,
+        @user_id,
+        1,
         0,
-        true,
+        1,
         0,
-        true,
+        1,
         0,
-        _starts_from,
-        _ends_on,
-        true;
+        @starts_from,
+        @ends_on,
+        1)
         
     INSERT INTO core.fiscal_year(fiscal_year_code, fiscal_year_name, starts_from, ends_on, audit_user_id)
-    SELECT _fiscal_year_code, _fiscal_year_name, _starts_from, _ends_on, _user_id;
+    VALUES(@fiscal_year_code, @fiscal_year_name, @starts_from, @ends_on, @user_id)
 
-    INSERT INTO policy.menu_access(office_id, menu_id, user_id)
-    SELECT _office_id, core.menus.menu_id, _user_id
-    FROM core.menus;
+    INSERT INTO policy.menu_access(office_id, menu_id, [user_id])
+    SELECT @office_id, core.menus.menu_id, @user_id
+    FROM core.menus
 
-    RETURN
 END
+GO
+
+CREATE TABLE core.flag_types
+(
+    flag_type_id                            integer IDENTITY(1,1) PRIMARY KEY,
+    flag_type_name                          varchar(24) NOT NULL,
+    background_color                        varchar(50) NOT NULL,
+    foreground_color                        varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE TABLE core.flags
+(
+    flag_id                                 bigint IDENTITY(1,1) PRIMARY KEY,
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    flag_type_id                            integer NOT NULL REFERENCES core.flag_types(flag_type_id),
+    resource                                varchar(200), --Fully qualified resource name. Example: transactions.non_gl_stock_master.
+    resource_key                            varchar(100), --The unique identifier for lookup. Example: non_gl_stock_master_id,
+    resource_id                             varchar(200), --The value of the unique identifier to lookup for,
+    flagged_on                              datetime NULL  DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE TABLE core.countries
+(
+    country_id                              integer IDENTITY(1,1) PRIMARY KEY,
+    country_code                            varchar(12) NOT NULL,
+    country_name                            varchar(100) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX countries_country_code_uix
+ON core.countries(country_code)
+GO
+
+CREATE UNIQUE INDEX countries_country_name_uix
+ON core.countries(country_name)
+GO
+
+CREATE TABLE core.states
+(
+    state_id                                integer IDENTITY(1,1) PRIMARY KEY,
+    country_id                              integer NOT NULL REFERENCES core.countries(country_id),
+    state_code                              varchar(12) NOT NULL,
+    state_name                              varchar(100) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+);
+
+CREATE UNIQUE INDEX states_state_code_uix
+ON core.states(country_id, state_code)
+GO
+
+CREATE UNIQUE INDEX states_state_name_uix
+ON core.states(country_id, state_name)
+GO
+
+
+CREATE TABLE core.counties
+(
+    county_id                               integer IDENTITY(1,1) PRIMARY KEY,
+    county_code                             varchar(12) NOT NULL,
+    county_name                             varchar(100) NOT NULL,
+    state_id                                integer NOT NULL REFERENCES core.states(state_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL  DEFAULT(GETDATE())
+    
+)
+GO
+
+
+CREATE TABLE core.zip_code_types
+(
+    zip_code_type_id                        integer IDENTITY(1,1) PRIMARY KEY,
+    type                                    national character varying(12),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX zip_code_types_zip_code_type_uix
+ON core.zip_code_types(type)
+GO
+
+
+CREATE TABLE core.zip_codes
+(
+    zip_code_id                             bigint IDENTITY(1,1) PRIMARY KEY,
+    state_id                                integer NOT NULL REFERENCES core.states(state_id),
+    code                                    varchar(12) NOT NULL,
+    zip_code_type_id                        integer NOT NULL REFERENCES core.zip_code_types(zip_code_type_id),
+    city                                    varchar(100) NOT NULL,
+    lat                                     decimal,
+    lon                                     decimal,
+    x_axis                                  decimal,
+    y_axis                                  decimal,    
+    z_axis                                  decimal,    
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())    
+)
+GO
+
+CREATE UNIQUE INDEX flags_user_id_resource_resource_id_uix
+ON core.flags(user_id, resource, resource_key, resource_id)
+GO
+
+CREATE TABLE core.attachment_lookup
+(
+        attachment_lookup_id                integer IDENTITY(1,1) PRIMARY KEY,
+        book                                varchar(50) NOT NULL,
+        resource                            varchar(500) NOT NULL,
+        resource_key                        varchar(500) NOT NULL        
+)
+GO
+
+CREATE UNIQUE INDEX attachment_lookup_book_uix
+ON core.attachment_lookup(book)
+GO
+
+CREATE UNIQUE INDEX attachment_lookup_resource_resource_key_uix
+ON core.attachment_lookup(book, resource_key)
+GO
+
+
+CREATE TABLE core.attachments
+(
+    attachment_id                           bigint IDENTITY(1,1) PRIMARY KEY,
+    user_id                                 integer NOT NULL 
+                                            REFERENCES office.users(user_id),
+    resource                                varchar(500) NOT NULL, --Fully qualified resource name. Example: transactions.non_gl_stock_master.
+    resource_key                            varchar(500) NOT NULL, --The unique identifier for lookup. Example: non_gl_stock_master_id,
+    resource_id                             bigint NOT NULL, --The value of the unique identifier to lookup for,
+    original_file_name                      varchar(500) NOT NULL,
+    file_extension                          varchar(12) NOT NULL,
+    file_path                               varchar(500) NOT NULL,
+    comment                                 varchar(96) NOT NULL CONSTRAINT attachments_comment_df DEFAULT(''),
+    added_on                                datetime NOT NULL CONSTRAINT attachments_added_on_df DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX attachments_file_path_uix
+ON core.attachments(file_path)
+GO
+
+CREATE FUNCTION core.get_state_id_by_state_name(@state_name varchar(100))
+RETURNS integer
+AS
+BEGIN
+	DECLARE @ret int
+    SELECT @ret =  state_id FROM core.states  WHERE state_name = @state_name;
+	RETURN @ret
+END
+GO
+
+CREATE TABLE core.verification_statuses
+(
+    verification_status_id                  smallint PRIMARY KEY,
+    verification_status_name                varchar(128) NOT NULL
+)
+GO
+
+CREATE TABLE policy.access_types
+(
+    access_type_id                  integer NOT NULL PRIMARY KEY,
+    access_type_name                varchar(48) NOT NULL UNIQUE
+)
+GO
+
+CREATE PROCEDURE policy.create_access_types(@access_type_id integer, @access_type_name varchar(48))
+AS
+BEGIN
+    IF EXISTS(SELECT 1 FROM policy.access_types WHERE access_type_id = @access_type_id) 
+	BEGIN
+        UPDATE policy.access_types
+        SET access_type_name = @access_type_name
+        WHERE access_type_id = @access_type_id;
+        RETURN 
+    END
+
+    INSERT INTO policy.access_types(access_type_id, access_type_name)
+    VALUES(@access_type_id, @access_type_name)
+END
+GO
+
+CREATE TABLE core.frequencies
+(
+    frequency_id                            integer IDENTITY(1,1) PRIMARY KEY,
+    frequency_code                          varchar(12) NOT NULL,
+    frequency_name                          varchar(50) NOT NULL
+)
+GO
+
+CREATE UNIQUE INDEX frequencies_frequency_code_uix
+ON core.frequencies(frequency_code)
+GO
+
+CREATE UNIQUE INDEX frequencies_frequency_name_uix
+ON core.frequencies(frequency_name)
+GO
+
+CREATE TABLE core.cash_flow_headings
+(
+    cash_flow_heading_id                    integer NOT NULL PRIMARY KEY,
+    cash_flow_heading_code                  varchar(12) NOT NULL,
+    cash_flow_heading_name                  varchar(100) NOT NULL,
+    cash_flow_heading_type                  character(1) NOT NULL
+                                            CONSTRAINT cash_flow_heading_cash_flow_heading_type_chk
+                                            CHECK(cash_flow_heading_type IN('O', 'I', 'F')),
+    is_debit                                bit NOT NULL
+                                            CONSTRAINT cash_flow_headings_is_debit_df
+                                            DEFAULT(0),
+    is_sales                                bit NOT NULL
+                                            CONSTRAINT cash_flow_headings_is_sales_df
+                                            DEFAULT(0),
+    is_purchase                             bit NOT NULL
+                                            CONSTRAINT cash_flow_headings_is_purchase_df
+                                            DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX cash_flow_headings_cash_flow_heading_code_uix
+ON core.cash_flow_headings(cash_flow_heading_code)
+GO
+
+CREATE UNIQUE INDEX cash_flow_headings_cash_flow_heading_name_uix
+ON core.cash_flow_headings(cash_flow_heading_code)
+GO
+
+CREATE TABLE core.cash_flow_setup
+(
+    cash_flow_setup_id                      integer IDENTITY(1,1) PRIMARY KEY,
+    cash_flow_heading_id                    integer NOT NULL REFERENCES core.cash_flow_headings(cash_flow_heading_id),
+    account_master_id                       smallint NOT NULL REFERENCES core.account_masters(account_master_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE INDEX cash_flow_setup_cash_flow_heading_id_inx
+ON core.cash_flow_setup(cash_flow_heading_id)
+GO
+
+CREATE INDEX cash_flow_setup_account_master_id_inx
+ON core.cash_flow_setup(account_master_id)
+GO
+
+CREATE FUNCTION core.get_cash_flow_heading_id_by_cash_flow_heading_code(@cash_flow_heading_code varchar(12))
+RETURNS integer
+BEGIN
+	DECLARE @ret integer
+    SELECT
+        @ret =cash_flow_heading_id
+    FROM
+        core.cash_flow_headings
+    WHERE
+        cash_flow_heading_code = @cash_flow_heading_code
+	RETURN @ret
+END
+GO
+
+CREATE FUNCTION core.get_account_master_id_by_account_master_code(@account_master_code varchar(3))
+RETURNS integer
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret =  core.account_masters.account_master_id
+    FROM core.account_masters
+    WHERE core.account_masters.account_master_code = @account_master_code
+	RETURN @ret
+END
+GO
+
+CREATE TABLE core.tax_base_amount_types
+(
+    tax_base_amount_type_code               varchar(12) PRIMARY KEY,--Should not be localized
+    tax_base_amount_type_name               varchar(50) NOT NULL
+)
+GO
+
+CREATE UNIQUE INDEX tax_base_amount_type_tax_base_amount_type_name_uix
+ON core.tax_base_amount_types(tax_base_amount_type_name)
+GO
+
+CREATE TABLE core.tax_rate_types
+(
+    tax_rate_type_code                      varchar(4) PRIMARY KEY,--Should not be localized
+    tax_rate_type_name                      varchar(50) NOT NULL
+);
+
+CREATE UNIQUE INDEX tax_rate_type_tax_rate_type_name_uix
+ON core.tax_rate_types(tax_rate_type_name);
+
+CREATE TABLE core.rounding_methods
+(
+    rounding_method_code                    varchar(4) PRIMARY KEY, --Should not be localized
+    rounding_method_name                    varchar(50) NOT NULL
+);
+
+CREATE UNIQUE INDEX rounding_methods_rounding_method_name_uix
+ON core.rounding_methods(rounding_method_name);
+
+CREATE TABLE core.sales_teams
+(
+    sales_team_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    sales_team_code                         varchar(12) NOT NULL,
+    sales_team_name                         varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX sales_teams_sales_team_code_uix
+ON core.sales_teams(sales_team_code)
+GO
+
+CREATE UNIQUE INDEX sales_teams_sales_team_name_uix
+ON core.sales_teams(sales_team_name)
+GO
+
+CREATE TABLE core.entities
+(
+    entity_id                               integer IDENTITY(1,1) PRIMARY KEY,
+    entity_name                             varchar(100),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX entities_entity_name_uix
+ON core.entities(entity_name)
+GO
+
+CREATE TABLE core.industries
+(
+    industry_id                             integer IDENTITY(1,1) PRIMARY KEY,
+    industry_name                           varchar(100) NOT NULL,
+    parent_industry_id                      integer REFERENCES core.industries(industry_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+);
+
+CREATE UNIQUE INDEX industries_industry_name_uix
+ON core.industries(industry_name);
+
+CREATE TABLE core.tax_master
+(
+    tax_master_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    tax_master_code                         varchar(12) NOT NULL,
+    tax_master_name                         varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX tax_master_tax_master_code_uix
+ON core.tax_master(tax_master_code)
+GO
+
+CREATE UNIQUE INDEX tax_master_tax_master_name_uix
+ON core.tax_master(tax_master_name)
+GO
+
+
+CREATE TABLE core.tax_authorities
+(
+    tax_authority_id                        integer IDENTITY(1,1) PRIMARY KEY,
+    tax_master_id                           integer NOT NULL REFERENCES core.tax_master(tax_master_id),
+    tax_authority_code                      varchar(12) NOT NULL,
+    tax_authority_name                      varchar(100) NOT NULL,
+    country_id                              integer NOT NULL REFERENCES core.countries(country_id),
+    state_id                                integer NULL REFERENCES core.states(state_id),
+    zip_code                                varchar(12) NULL,
+    address_line_1                          varchar(128) NULL,   
+    address_line_2                          varchar(128) NULL,
+    street                                  varchar(50) NULL,
+    city                                    varchar(50) NULL,
+    phone                                   varchar(100) NULL,
+    fax                                     varchar(24) NULL,
+    cell                                    varchar(24) NULL,
+    email                                   varchar(128) NULL,
+    url                                     varchar(50) NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX tax_authorities_tax_authority_code_uix
+ON core.tax_authorities(tax_authority_code)
+GO
+
+CREATE UNIQUE INDEX tax_authorities_tax_authority_name_uix
+ON core.tax_authorities(tax_authority_name)
+GO
+
+CREATE FUNCTION core.get_tax_master_id_by_tax_master_code(@tax_master_code varchar(12))
+RETURNS integer
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret = tax_master_id
+    FROM core.tax_master
+    WHERE tax_master_code=@tax_master_code
+	RETURN @ret
+END
+GO
+
+CREATE FUNCTION core.get_country_id_by_country_code(@country_code varchar(12))
+RETURNS integer
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret =  country_id
+    FROM core.countries
+    WHERE country_code = @country_code
+	RETURN @ret
+END
+GO
+
+CREATE FUNCTION core.get_state_id_by_state_code(@state_code varchar(12))
+RETURNS integer
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret =
+        state_id
+    FROM
+        core.states
+    WHERE
+        state_code = @state_code
+	RETURN @ret
+END
+GO
+
+CREATE TABLE core.sales_tax_types
+(
+    sales_tax_type_id                       integer IDENTITY(1,1) PRIMARY KEY,
+    sales_tax_type_code                     varchar(12) NOT NULL,
+    sales_tax_type_name                     varchar(50) NOT NULL,
+    is_vat                                  bit NOT NULL DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL  DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX sales_tax_types_sales_tax_type_code_uix
+ON core.sales_tax_types(sales_tax_type_code)
+GO
+
+CREATE UNIQUE INDEX sales_tax_types_sales_tax_type_name_uix
+ON core.sales_tax_types(sales_tax_type_name)
+GO
+
+CREATE INDEX sales_tax_types_is_vat_inx
+ON core.sales_tax_types(is_vat)
+GO
+
+CREATE TABLE core.tax_exempt_types
+(
+    tax_exempt_type_id                      integer IDENTITY(1,1) PRIMARY KEY,
+    tax_exempt_type_code                    varchar(12) NOT NULL,
+    tax_exempt_type_name                    varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX tax_exempt_types_tax_exempt_type_code_uix
+ON core.tax_exempt_types(tax_exempt_type_code)
+GO
+
+CREATE UNIQUE INDEX tax_exempt_types_tax_exempt_type_name_uix
+ON core.tax_exempt_types(tax_exempt_type_name)
+GO
+
+CREATE TABLE core.card_types
+(
+    card_type_id                    integer PRIMARY KEY,
+    card_type_code                  varchar(12) NOT NULL,
+    card_type_name                  varchar(100) NOT NULL
+)
+GO
+
+CREATE UNIQUE INDEX card_types_card_type_code_uix
+ON core.card_types(card_type_code)
+GO
+
+CREATE UNIQUE INDEX card_types_card_type_name_uix
+ON core.card_types(card_type_name)
+GO
+
+CREATE PROCEDURE core.create_card_type
+(
+    @card_type_id       integer, 
+    @card_type_code     varchar(12),
+    @card_type_name     varchar(100)
+)
+
+AS
+BEGIN
+    IF NOT EXISTS
+    (
+        SELECT * FROM core.card_types
+        WHERE card_type_id = @card_type_id
+    ) BEGIN
+        INSERT INTO core.card_types(card_type_id, card_type_code, card_type_name)
+        VALUES(@card_type_id, @card_type_code, @card_type_name)
+	END
+    ELSE
+	BEGIN
+        UPDATE core.card_types
+        SET 
+            card_type_code =    @card_type_code, 
+            card_type_name =    @card_type_name
+        WHERE
+            card_type_id =      @card_type_id;
+    END
+END
+GO
+
+CREATE TABLE core.payment_cards
+(
+    payment_card_id                     integer IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    payment_card_code                   varchar(12) NOT NULL,
+    payment_card_name                   varchar(100) NOT NULL,
+    card_type_id                        integer NOT NULL REFERENCES core.card_types(card_type_id),            
+    audit_user_id                       integer NULL REFERENCES office.users(user_id),            
+    audit_ts                            datetime NULL DEFAULT(GETDATE())            
+)
+GO
+
+CREATE UNIQUE INDEX payment_cards_payment_card_code_uix
+ON core.payment_cards(payment_card_code)
+GO
+
+CREATE UNIQUE INDEX payment_cards_payment_card_name_uix
+ON core.payment_cards(payment_card_name)    
+GO
+
+CREATE PROCEDURE core.create_payment_card
+(
+    @payment_card_code      varchar(12),
+    @payment_card_name      varchar(100),
+    @card_type_id           integer
+)
+AS
+BEGIN
+    IF NOT EXISTS
+    (
+        SELECT * FROM core.payment_cards
+        WHERE payment_card_code = @payment_card_code
+    ) BEGIN
+        INSERT INTO core.payment_cards(payment_card_code, payment_card_name, card_type_id)
+        VALUES(@payment_card_code, @payment_card_name, @card_type_id)
+	END
+    ELSE
+	BEGIN
+        UPDATE core.payment_cards
+        SET 
+            payment_card_name =     @payment_card_name,
+            card_type_id =          @card_type_id
+        WHERE
+            payment_card_code =     @payment_card_code;
+    END 
+END
+GO
+
+CREATE TABLE core.brands
+(
+    brand_id		                        integer IDENTITY(1,1) PRIMARY KEY,
+    brand_code                              varchar(12) NOT NULL,
+    brand_name                              varchar(150) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX brands_brand_code_uix
+ON core.brands(brand_code)
+GO
+
+CREATE UNIQUE INDEX brands_brand_name_uix
+ON core.brands(brand_name)
+GO
+
+CREATE TABLE core.price_types
+(
+    price_type_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    price_type_code                         varchar(12) NOT NULL,
+    price_type_name                         varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX price_types_price_type_code_uix
+ON core.price_types(price_type_code)
+GO
+
+CREATE UNIQUE INDEX price_types_price_type_name_uix
+ON core.price_types(price_type_name)
+GO
+
+CREATE TABLE core.units
+(
+    unit_id                                 integer IDENTITY(1,1) PRIMARY KEY,
+    unit_code                               varchar(12) NOT NULL,
+    unit_name                               varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX units_unit_code_uix
+ON core.units(unit_code)
+GO
+
+CREATE UNIQUE INDEX units_unit_name_uix
+ON core.units(unit_name)
+GO
+
+CREATE TABLE core.compound_units
+(
+    compound_unit_id                        integer IDENTITY(1,1) PRIMARY KEY,
+    base_unit_id                            integer NOT NULL REFERENCES core.units(unit_id),
+    value                                   smallint NOT NULL,
+    compare_unit_id                         integer NOT NULL REFERENCES core.units(unit_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE()),
+                                            CONSTRAINT compound_units_chk
+                                            CHECK(base_unit_id != compare_unit_id)
+)
+GO
+
+CREATE UNIQUE INDEX compound_units_info_uix
+ON core.compound_units(base_unit_id, compare_unit_id)
+GO
+
+CREATE TABLE core.item_types
+(
+    item_type_id                            integer IDENTITY(1,1) PRIMARY KEY,
+    item_type_code                          varchar(12) NOT NULL,
+    item_type_name                          varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX item_type_item_type_code_uix
+ON core.item_types(item_type_code)
+GO
+
+
+CREATE UNIQUE INDEX item_type_item_type_name_uix
+ON core.item_types(item_type_name)
+GO
+
+CREATE TABLE core.shipping_mail_types
+(
+    shipping_mail_type_id                   integer IDENTITY(1,1) PRIMARY KEY,
+    shipping_mail_type_code                 varchar(12) NOT NULL,
+    shipping_mail_type_name                 varchar(64) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL  DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX shipping_mail_types_shipping_mail_type_code_uix
+ON core.shipping_mail_types(shipping_mail_type_code)
+GO
+
+CREATE UNIQUE INDEX shipping_mail_types_shipping_mail_type_name_uix
+ON core.shipping_mail_types(shipping_mail_type_name)
+GO
+
+CREATE TABLE core.shipping_package_shapes
+(
+    shipping_package_shape_id               integer IDENTITY(1,1) PRIMARY KEY,
+    shipping_package_shape_code             varchar(12) NOT NULL,
+    shipping_package_shape_name             varchar(64) NOT NULL,
+    is_rectangular                          bit NOT NULL   
+                                            DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+
+
+CREATE UNIQUE INDEX shipping_package_shapes_shipping_package_shape_code_uix
+ON core.shipping_package_shapes(shipping_package_shape_code)
+GO
+
+CREATE UNIQUE INDEX shipping_package_shapes_shipping_package_shape_name_uix
+ON core.shipping_package_shapes(shipping_package_shape_name)
+GO
+
+CREATE TABLE office.store_types
+(
+    store_type_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    store_type_code                         varchar(12) NOT NULL,
+    store_type_name                         varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX store_types_code_uix
+ON office.store_types(store_type_code)
+GO
+
+
+CREATE UNIQUE INDEX store_types_name_uix
+ON office.store_types(store_type_name)
+GO
+
+CREATE TABLE office.cost_centers
+(
+    cost_center_id                          integer IDENTITY(1,1) PRIMARY KEY,
+    cost_center_code                        varchar(24) NOT NULL,
+    cost_center_name                        varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL  DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX cost_centers_cost_center_code_uix
+ON office.cost_centers(cost_center_code)
+GO
+
+CREATE UNIQUE INDEX cost_centers_cost_center_name_uix
+ON office.cost_centers(cost_center_name)
+GO
+
+CREATE TABLE core.state_sales_taxes
+(
+    state_sales_tax_id                      integer IDENTITY(1,1) PRIMARY KEY,
+    state_sales_tax_code                    varchar(12) NOT NULL,
+    state_sales_tax_name                    varchar(100) NOT NULL,
+    state_id                                integer NOT NULL REFERENCES core.states(state_id),
+    entity_id                               integer NULL REFERENCES core.entities(entity_id),
+    industry_id                             integer NULL REFERENCES core.industries(industry_id),
+    item_group_id                           integer NULL /*REFERENCES core.item_groups(item_group_id)*/,        
+    rate                                    decimal(24,4) NOT NULL DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX state_sales_taxes_state_sales_tax_code_uix
+ON core.state_sales_taxes(state_sales_tax_code)
+GO
+
+CREATE UNIQUE INDEX state_sales_taxes_state_sales_tax_name_uix
+ON core.state_sales_taxes(state_sales_tax_name)
+GO
+
+CREATE UNIQUE INDEX state_sales_taxes_state_id_entity_id_uix
+ON core.state_sales_taxes(state_id, entity_id)
+GO
+
+CREATE UNIQUE INDEX state_sales_taxes_state_id_industry_id_uix
+ON core.state_sales_taxes(state_id, industry_id)
+GO
+
+CREATE UNIQUE INDEX state_sales_taxes_state_id_item_group_id_uix
+ON core.state_sales_taxes(state_id, item_group_id)
+GO
+
+CREATE TABLE core.county_sales_taxes
+(
+    county_sales_tax_id                     integer IDENTITY(1,1) PRIMARY KEY,
+    county_sales_tax_code                   varchar(12) NOT NULL,
+    county_sales_tax_name                   varchar(100) NOT NULL,
+    county_id                               integer REFERENCES core.counties(county_id),
+    entity_id                               integer NULL REFERENCES core.entities(entity_id),
+    industry_id                             integer NULL REFERENCES core.industries(industry_id),
+    item_group_id                           integer NULL /*REFERENCES core.item_groups(item_group_id)*/,        
+    rate                                    decimal(24,4) NOT NULL DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+
+)
+GO
+
+
+CREATE UNIQUE INDEX county_sales_taxes_county_sales_tax_code_uix
+ON core.county_sales_taxes(county_sales_tax_code)
+GO
+
+CREATE UNIQUE INDEX county_sales_taxes_county_sales_tax_name_uix
+ON core.county_sales_taxes(county_sales_tax_name)
+GO
+
+CREATE UNIQUE INDEX county_sales_taxes_county_id_entity_id_uix
+ON core.county_sales_taxes(county_id, entity_id)
+GO
+
+CREATE UNIQUE INDEX county_sales_taxes_county_id_industry_id_uix
+ON core.county_sales_taxes(county_id, industry_id)
+GO
+
+CREATE UNIQUE INDEX county_sales_taxes_county_id_item_group_id_uix
+ON core.county_sales_taxes(county_id, item_group_id)
+GO
+
+CREATE FUNCTION core.get_account_id_by_account_name(@account_name varchar(100))
+RETURNS bigint
+AS
+BEGIN
+	DECLARE @ret bigint
+    SELECT @ret = 
+		account_id
+    FROM core.accounts
+    WHERE account_name=@account_name
+	RETURN @ret
+END
+GO
+
+CREATE FUNCTION core.get_unit_id_by_unit_code(@unit_code varchar(12))
+RETURNS integer
+AS
+BEGIN
+    DECLARE @ret integer
+    SELECT @ret = 
+            core.units.unit_id
+        FROM
+            core.units
+        WHERE
+            core.units.unit_code=@unit_code
+	RETURN @ret
+    
+END
+GO
+
+CREATE TABLE core.party_types
+(
+    party_type_id                           integer IDENTITY(1,1) PRIMARY KEY,
+    party_type_code                         varchar(12) NOT NULL, 
+    party_type_name                         varchar(50) NOT NULL,
+    is_supplier                             bit NOT NULL   
+                                            CONSTRAINT party_types_is_supplier_df   
+                                            DEFAULT(0),
+    account_id                              bigint NOT NULL REFERENCES core.accounts(account_id),--When a new party is added, this becomes the parent account.
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                              
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX party_types_party_type_code_uix
+ON core.party_types(party_type_code)
+GO
+
+CREATE UNIQUE INDEX party_types_party_type_name_uix
+ON core.party_types(party_type_name)
+GO
+
+CREATE FUNCTION core.get_account_id_by_account_number(@account_number varchar(12))
+RETURNS bigint
+AS
+BEGIN
+	DECLARE @ret bigint
+    SELECT @ret = 
+		account_id
+    FROM core.accounts
+    WHERE account_number=@account_number
+	RETURN @ret;
+END
+GO
+
+CREATE TABLE core.shippers
+(
+    shipper_id                              integer IDENTITY(1,1) PRIMARY KEY,
+    shipper_code                            varchar(12) NULL,
+    company_name                            varchar(128) NOT NULL,
+    shipper_name                            varchar(150) NULL,
+    po_box                                  varchar(128) NULL,
+    address_line_1                          varchar(128) NULL,   
+    address_line_2                          varchar(128) NULL,
+    street                                  varchar(50) NULL,
+    city                                    varchar(50) NULL,
+    state                                   varchar(50) NULL,
+    country                                 varchar(50) NULL,
+    phone                                   varchar(50) NULL,
+    fax                                     varchar(50) NULL,
+    cell                                    varchar(50) NULL,
+    email                                   varchar(128) NULL,
+    url                                     varchar(50) NULL,
+    contact_person                          varchar(50) NULL,
+    contact_po_box                          varchar(128) NULL,
+    contact_address_line_1                  varchar(128) NULL,   
+    contact_address_line_2                  varchar(128) NULL,
+    contact_street                          varchar(50) NULL,
+    contact_city                            varchar(50) NULL,
+    contact_state                           varchar(50) NULL,
+    contact_country                         varchar(50) NULL,
+    contact_email                           varchar(128) NULL,
+    contact_phone                           varchar(50) NULL,
+    contact_cell                            varchar(50) NULL,
+    factory_address                         varchar(250) NULL,
+    pan_number                              varchar(50) NULL,
+    sst_number                              varchar(50) NULL,
+    cst_number                              varchar(50) NULL,
+    account_id                              bigint NOT NULL REFERENCES core.accounts(account_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                              
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX shippers_shipper_code_uix
+ON core.shippers(shipper_code)
+GO
+
+CREATE TABLE crm.lead_sources
+(
+    lead_source_id                          int IDENTITY(1,1) PRIMARY KEY,
+    lead_source_code                        varchar(12) NOT NULL,
+    lead_source_name                        varchar(128) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX lead_sources_lead_source_code_uix
+ON crm.lead_sources(lead_source_code)
+GO
+
+
+CREATE UNIQUE INDEX lead_sources_lead_source_name_uix
+ON crm.lead_sources(lead_source_name)
+GO
+
+
+
+CREATE TABLE crm.lead_statuses
+(
+    lead_status_id                          int IDENTITY(1,1) PRIMARY KEY,
+    lead_status_code                        varchar(12) NOT NULL,
+    lead_status_name                        varchar(128) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX lead_statuses_lead_status_code_uix
+ON crm.lead_statuses(lead_status_code)
+GO
+
+
+CREATE UNIQUE INDEX lead_statuses_lead_status_name_uix
+ON crm.lead_statuses(lead_status_name)
+GO
+
+
+
+CREATE TABLE crm.opportunity_stages
+(
+    opportunity_stage_id                    int IDENTITY(1,1)  PRIMARY KEY,
+    opportunity_stage_code                  varchar(12) NOT NULL,
+    opportunity_stage_name                  varchar(50) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX opportunity_stages_opportunity_stage_code_uix
+ON crm.opportunity_stages(opportunity_stage_code)
+GO
+
+CREATE UNIQUE INDEX opportunity_stages_opportunity_stage_name_uix
+ON crm.opportunity_stages(opportunity_stage_name)
+GO
+
+CREATE TABLE core.genders
+(
+    gender_code                             varchar(4) NOT NULL PRIMARY KEY,
+    gender_name                             varchar(50) NOT NULL UNIQUE,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+CREATE TABLE core.identification_types
+(
+    identification_type_code                varchar(12) NOT NULL PRIMARY KEY,
+    identification_type_name                varchar(100) NOT NULL UNIQUE,
+    can_expire                              bit NOT NULL DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+CREATE TABLE core.social_networks
+(
+    social_network_name                     varchar(128) NOT NULL PRIMARY KEY,
+    semantic_css_class                      varchar(128),
+    base_url                                varchar(128) DEFAULT(''),
+    profile_url                             varchar(128) DEFAULT(''),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+CREATE TABLE core.week_days
+(
+    week_day_id                 integer NOT NULL CHECK(week_day_id>=1 AND week_day_id<=7) PRIMARY KEY,
+    week_day_code               varchar(12) NOT NULL UNIQUE,
+    week_day_name               varchar(50) NOT NULL UNIQUE
+)
+GO
+
+CREATE TABLE core.marital_statuses
+(
+    marital_status_id                       int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    marital_status_code                     varchar(12) NOT NULL UNIQUE,
+    marital_status_name                     varchar(128) NOT NULL,
+    is_legally_recognized_marriage          bit NOT NULL DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),    
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())
+)
+GO
+
+INSERT INTO core.config
+SELECT 1, 'Inventory System' UNION ALL
+SELECT 2, 'COGS Calculation Method' UNION ALL
+SELECT 3, 'Quotation Valid Duration'
+GO
+
+INSERT INTO office.departments(department_code, department_name)
+SELECT 'SAL', 'Sales & Billing'         UNION ALL
+SELECT 'MKT', 'Marketing & Promotion'   UNION ALL
+SELECT 'SUP', 'Support'                 UNION ALL
+SELECT 'CC', 'Customer Care';
+
+INSERT INTO office.roles(role_code,role_name, is_system)
+SELECT 'SYST', 'System', 1;
+
+INSERT INTO office.roles(role_code,role_name, is_admin)
+SELECT 'ADMN', 'Administrators', 1;
+
+INSERT INTO office.roles(role_code,role_name)
+SELECT 'USER', 'Users'                  UNION ALL
+SELECT 'EXEC', 'Executive'              UNION ALL
+SELECT 'MNGR', 'Manager'                UNION ALL
+SELECT 'SALE', 'Sales'                  UNION ALL
+SELECT 'MARK', 'Marketing'              UNION ALL
+SELECT 'LEGL', 'Legal & Compliance'     UNION ALL
+SELECT 'FINC', 'Finance'                UNION ALL
+SELECT 'HUMR', 'Human Resources'        UNION ALL
+SELECT 'INFO', 'Information Technology' UNION ALL
+SELECT 'CUST', 'Customer Service';
+GO
 
 SET ANSI_PADDING OFF
 GO
+
+

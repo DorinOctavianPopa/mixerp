@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Linq.Expressions;
+using System.Data.SqlClient;
 
 // ReSharper Disable All
 namespace PetaPoco
@@ -459,6 +460,7 @@ namespace PetaPoco
         static Regex rxParamsPrefix = new Regex(@"(?<!@)@\w+", RegexOptions.Compiled);
         public IDbCommand CreateCommand(IDbConnection connection, string sql, params object[] args)
         {
+				object[] param_list_sql = args;
             // Perform named argument replacements
             if (EnableNamedParams)
             {
@@ -489,8 +491,14 @@ namespace PetaPoco
 				//Microsoft SQL Server
 				if(_dbType == DBType.SqlServer)
 				{
-				//Column with name "Key" is not allowed - replace with [Key]
+					//Column with name "Key" is not allowed - replace with [Key]
 					cmd.CommandText = cmd.CommandText.Replace("key", "[key]");
+					foreach (var item in param_list_sql)
+					{
+						if (item.GetType() != typeof(SqlParameter))
+							break;
+						cmd.Parameters.Add(item);
+					}
 				}
 
             if (!String.IsNullOrEmpty(sql))
@@ -539,7 +547,34 @@ namespace PetaPoco
             }
         }
 
-        public int Execute(Sql sql)
+		public int ExecuteProcedure(string sql, params object[] args)
+		{
+			try
+			{
+				OpenSharedConnection();
+				try
+				{
+					using (var cmd = CreateCommand(_sharedConnection, sql, args))
+					{
+						cmd.CommandType = CommandType.StoredProcedure;
+						var retv = cmd.ExecuteNonQuery();
+						OnExecutedCommand(cmd);
+						return retv;
+					}
+				}
+				finally
+				{
+					CloseSharedConnection();
+				}
+			}
+			catch (Exception x)
+			{
+				OnException(x);
+				throw;
+			}
+		}
+
+		public int Execute(Sql sql)
         {
             return Execute(sql.SQL, sql.Arguments);
         }
