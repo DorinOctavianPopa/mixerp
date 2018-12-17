@@ -44,14 +44,15 @@ GO
 CREATE TABLE [localization].[resources]
 (
     resource_id         int IDENTITY(1,1) PRIMARY KEY,
-    path                varchar(50),
+    resource_class      varchar(50),
     [key]               varchar(50),
     value               varchar(500)
 )
 GO
-CREATE UNIQUE NONCLUSTERED INDEX resources_path_key_uix ON localization.resources(path,[key]) 
+
+CREATE UNIQUE NONCLUSTERED INDEX resources_path_key_uix ON localization.resources(resource_class,[key]) 
 GO
-CREATE UNIQUE NONCLUSTERED INDEX resources_path_inx ON localization.resources(path) 
+CREATE UNIQUE NONCLUSTERED INDEX resources_path_inx ON localization.resources(resource_class) 
 GO
 CREATE UNIQUE NONCLUSTERED INDEX resources_key_inx ON localization.resources([key]) 
 GO
@@ -82,23 +83,24 @@ GO
 
 CREATE TABLE localization.localized_resources
 (
-    id                  int IDENTITY(1,1) PRIMARY KEY,
+    resource_id         int IDENTITY(1,1) PRIMARY KEY,
     culture_code        varchar(50),
     [key]               varchar(50),
     value               varchar(500),
 	 CONSTRAINT FK_localized_resources_cultures FOREIGN KEY(culture_code) REFERENCES localization.cultures(culture_code) ON UPDATE  NO ACTION ON DELETE  NO ACTION 
 );
+
 GO
 CREATE UNIQUE NONCLUSTERED INDEX localized_resources_culture_key_uix ON localization.localized_resources(culture_code,[key]) 
 GO
 
-DROP VIEW IF EXISTS localization.resource_view;
+DROP VIEW localization.resource_view;
 GO
 
 CREATE VIEW localization.localized_resources_view
 AS
 SELECT
-    REPLACE(localization.resources.path, '.resx', '') + '.' + localization.localized_resources.culture_code + '.resx' AS resource,
+    REPLACE(localization.resources.resource_class, '.resx', '') + '.' + localization.localized_resources.culture_code + '.resx' AS resource,
     localization.resources.[key],
     localization.localized_resources.culture_code,
     localization.localized_resources.value
@@ -107,7 +109,30 @@ INNER JOIN localization.localized_resources
 ON localization.localized_resources.[key] = localization.resources.[key]
 GO
 
+DROP VIEW localization.resource_view;
+GO
 
+CREATE VIEW localization.resource_view
+AS
+SELECT resource_class, '' as culture, [key], value
+FROM localization.resources
+UNION ALL
+SELECT resource_class, culture_code, [key], localization.localized_resources.value 
+FROM localization.localized_resources
+INNER JOIN localization.resources
+ON localization.localized_resources.resource_id = localization.resources.resource_id;
+GO
+
+
+DROP VIEW localization.localized_resource_view;
+GO
+
+CREATE VIEW localization.localized_resource_view
+AS
+SELECT
+    resource_class + CASE WHEN COALESCE(culture, '') = '' THEN '' ELSE '.' + culture END + '.' + [key] as [key], value 
+FROM localization.resource_view;
+GO
 
 SET ANSI_PADDING OFF
 GO
