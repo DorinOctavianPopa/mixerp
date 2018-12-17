@@ -1,5 +1,56 @@
-﻿CREATE SCHEMA [config]
+﻿USE [mixerp]
 GO
+CREATE SCHEMA [config] AUTHORIZATION [public]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[config] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[config] TO [public]
+GO
+
 
 CREATE SCHEMA [localization]
 GO
