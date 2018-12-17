@@ -1,12 +1,14 @@
 ﻿using MixERP.Net.Common;
 using MixERP.Net.Common.Helpers;
 using Npgsql;
+using System.Data.SqlClient;
 
 namespace MixERP.Net.DbFactory
 {
     public static class DbConnection
     {
-        public static string GetConnectionString(string catalog)
+		static public string DBProvider = ConfigurationHelper.GetDbServerParameter("Provider").ToLower();
+		public static string GetConnectionString(string catalog)
         {
             CatalogHelper.ValidateCatalog(catalog);
 
@@ -21,8 +23,10 @@ namespace MixERP.Net.DbFactory
             string userId = ConfigurationHelper.GetDbServerParameter("UserId");
             string password = ConfigurationHelper.GetDbServerParameter("Password");
             int port = Conversion.TryCastInteger(ConfigurationHelper.GetDbServerParameter("Port"));
-
-            return GetConnectionString(host, database, userId, password, port);
+			bool integratedSecurity = ConfigurationHelper.GetDbServerParameter("IntegratedSecurity").ToLower() == "yes" ? true : false;
+			if(DBProvider == "sqlclient")
+				return GetSQLConnectionString(host, database, userId, password, integratedSecurity);
+			return GetConnectionString(host, database, userId, password, port);
         }
 
         public static string GetConnectionString(string host, string database, string username, string password, int port)
@@ -47,5 +51,31 @@ namespace MixERP.Net.DbFactory
 
             return connectionStringBuilder.ConnectionString;
         }
-    }
+
+
+		/// <summary>
+		/// Return SQL Connection String for Microsoft SQL Server
+		/// </summary>
+		/// <param name="host"></param>
+		/// <param name="database"></param>
+		/// <param name="username"></param>
+		/// <param name="password"></param>
+		/// <param name="integratedSecurity"></param>
+		/// <returns></returns>
+		private static string GetSQLConnectionString(string host, string database, string username, string password,
+			bool integratedSecurity)
+		{
+			SqlConnectionStringBuilder SQLconnectionStringBuilder = new SqlConnectionStringBuilder();
+			SQLconnectionStringBuilder.DataSource = host;
+			SQLconnectionStringBuilder.InitialCatalog = database;
+			SQLconnectionStringBuilder.IntegratedSecurity = integratedSecurity;
+			if (!SQLconnectionStringBuilder.IntegratedSecurity)
+			{
+				SQLconnectionStringBuilder.UserID = username;
+				SQLconnectionStringBuilder.Password = password;
+			}
+			SQLconnectionStringBuilder.ApplicationName = "MixERP";
+			return SQLconnectionStringBuilder.ConnectionString;
+		}
+	}
 }

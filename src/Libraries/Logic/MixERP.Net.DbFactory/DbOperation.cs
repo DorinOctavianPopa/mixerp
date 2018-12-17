@@ -6,6 +6,7 @@ using Serilog;
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -273,6 +274,24 @@ namespace MixERP.Net.DbFactory
 
         public static bool IsServerAvailable(string catalog)
         {
+			if(DbConnection.DBProvider=="sqlclient")
+			{
+				try
+				{
+					using (SqlConnection connection = new SqlConnection(DbConnection.GetConnectionString(catalog)))
+					{
+						connection.Open();
+					}
+
+					return true;
+				}
+				catch (SqlException ex)
+				{
+					Log.Warning("Server is not available: {Exception}.", ex);
+				}
+
+				return false;
+			}
             try
             {
                 using (NpgsqlConnection connection = new NpgsqlConnection(DbConnection.GetConnectionString(catalog)))

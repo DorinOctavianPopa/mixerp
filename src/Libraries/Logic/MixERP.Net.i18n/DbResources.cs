@@ -72,9 +72,48 @@ namespace MixERP.Net.i18n
 		internal static IEnumerable<LocalizedResource> GetLocalizationTable(string language)
         {
             List<LocalizedResource> resources = new List<LocalizedResource>();
-            const string sql = "SELECT * FROM localization.get_localization_table(@Language) WHERE COALESCE(key, '') != '';";
+            string sql = "SELECT * FROM localization.get_localization_table(@Language) WHERE COALESCE(key, '') != '';";
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionStringHelper.GetConnectionString()))
+			if(ConnectionStringHelper.DBProvider=="sqlclient")
+			{
+				sql = "SELECT * FROM localization.get_localization_table(@Language) WHERE COALESCE([key], '') != ''";
+				using (SqlConnection connection = new SqlConnection(ConnectionStringHelper.GetConnectionString()))
+				{
+					using (SqlCommand command = new SqlCommand(sql, connection))
+					{
+						command.Parameters.AddWithValue("@Language", language);
+
+						using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+						{
+							using (DataTable dataTable = new DataTable())
+							{
+								dataTable.Locale = CultureManager.GetCurrent();
+								adapter.Fill(dataTable);
+
+								if (dataTable.Rows.Count > 0)
+								{
+									foreach (DataRow row in dataTable.Rows)
+									{
+										LocalizedResource resource = new LocalizedResource();
+
+										resource.Id = long.Parse(row["id"].ToString());
+										resource.ResourceClass = row["resource_class"].ToString();
+										resource.Key = row["key"].ToString();
+										resource.Original = row["original"].ToString();
+										resource.Translated = row["translated"].ToString();
+
+										resources.Add(resource);
+									}
+								}
+							}
+						}
+					}
+				}
+				return resources;
+
+			}
+
+			using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionStringHelper.GetConnectionString()))
             {
                 using (NpgsqlCommand command = new NpgsqlCommand(sql, connection))
                 {

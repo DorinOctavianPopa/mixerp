@@ -8,19 +8,28 @@ namespace MixERP.Net.i18n
     internal static class ConnectionStringHelper
     {
 
-			static public string DBProvider  = GetDbServerParameter("Provider").ToLower();
-			public static string GetConnectionString()
-        {
-            string host = GetDbServerParameter("Server");
-            string database = GetDbServerParameter("Database");
-            string userId = GetDbServerParameter("UserId");
-            string password = GetDbServerParameter("Password");
-            int port = int.Parse(GetDbServerParameter("Port"));
+		static public string DBProvider  = GetDbServerParameter("Provider").ToLower();
+		static public string ConnectionString = string.Empty;
 
-				return GetConnectionString(host, database, userId, password, port);
-        }
+		public static string GetConnectionString()
+		{
+			if (ConnectionString == string.Empty)
+			{
+				string host = GetDbServerParameter("Server");
+				string database = GetDbServerParameter("Database");
+				string userId = GetDbServerParameter("UserId");
+				string password = GetDbServerParameter("Password");
+				int port = int.Parse(GetDbServerParameter("Port"));
 
-			public static string GetSqlConnectionString()
+				ConnectionString =  GetConnectionString(host, database, userId, password, port);
+			}
+
+			return ConnectionString;
+		}
+
+		public static string GetSqlConnectionString()
+		{
+			if (ConnectionString == string.Empty)
 			{
 				string host = GetDbServerParameter("Server");
 				string database = GetDbServerParameter("Database");
@@ -28,8 +37,11 @@ namespace MixERP.Net.i18n
 				string password = GetDbServerParameter("Password");
 				bool integratedSecurity = GetDbServerParameter("IntegratedSecurity").ToLower() == "yes" ? true : false;
 
-				return GetSQLConnectionString(host, database, userId, password, integratedSecurity);
+				ConnectionString = GetSQLConnectionString(host, database, userId, password, integratedSecurity); 
 			}
+
+			return ConnectionString;
+		}
 
 		private static string GetDbServerParameter(string keyName)
         {
