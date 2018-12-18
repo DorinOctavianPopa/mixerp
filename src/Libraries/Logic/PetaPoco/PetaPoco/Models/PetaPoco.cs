@@ -2044,6 +2044,8 @@ namespace PetaPoco
                             // Enumerate all fields generating a set assignment for the column
                             for (int i = firstColumn; i < firstColumn + countColumns; i++)
                             {
+										  //Microsoft SQL
+										  
                                 // Get the PocoColumn for this db column, ignore if not known
                                 PocoColumn pc;
                                 if (!Columns.TryGetValue(r.GetName(i), out pc))

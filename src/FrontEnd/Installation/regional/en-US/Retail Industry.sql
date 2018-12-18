@@ -4368,3 +4368,6 @@ SELECT 'DIV', 'Divorced',               0   UNION ALL
 SELECT 'WID', 'Widower',                0   UNION ALL
 SELECT 'CIV', 'Civil Union',            1
 
+GO
+
+
