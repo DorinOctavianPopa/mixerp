@@ -493,6 +493,8 @@ namespace PetaPoco
 				{
 					//Column with name "Key" is not allowed - replace with [Key]
 					cmd.CommandText = cmd.CommandText.Replace("key", "[key]");
+					if (!cmd.CommandText.ToLower().Contains("select"))
+						cmd.CommandType = CommandType.StoredProcedure;
 					foreach (var item in param_list_sql)
 					{
 						if (item.GetType() != typeof(SqlParameter))
@@ -779,8 +781,59 @@ namespace PetaPoco
             return SkipTake<T>(skip, take, sql.SQL, sql.Arguments);
         }
 
-        // Return an enumerable collection of pocos
-        public IEnumerable<T> Query<T>(string sql, params object[] args)
+		// Return an enumerable collection of pocos for Microsoft SQL
+		public IEnumerable<T> Query<T>(string sql, params SqlParameter[] args)
+		{
+			OpenSharedConnection();
+			try
+			{
+				using (var cmd = CreateCommand(_sharedConnection, sql, args))
+				{
+					IDataReader r;
+					var pd = PocoData.ForType(typeof(T));
+					try
+					{
+						r = cmd.ExecuteReader();
+						OnExecutedCommand(cmd);
+					}
+					catch (Exception x)
+					{
+						OnException(x);
+						throw;
+					}
+					var factory = pd.GetFactory(cmd.CommandText, _sharedConnection.ConnectionString, ForceDateTimesToUtc, 0, r.FieldCount, r) as Func<IDataReader, T>;
+					using (r)
+					{
+						while (true)
+						{
+							T poco;
+							try
+							{
+								if (!r.Read())
+									yield break;
+								poco = factory(r);
+							}
+							catch (Exception x)
+							{
+								OnException(x);
+								throw;
+							}
+
+							yield return poco;
+						}
+					}
+				}
+			}
+			finally
+			{
+				CloseSharedConnection();
+			}
+		}
+
+
+
+		// Return an enumerable collection of pocos
+		public IEnumerable<T> Query<T>(string sql, params object[] args)
         {
             if (EnableAutoSelect)
                 sql = AddSelectClause<T>(sql);

@@ -34,7 +34,27 @@ namespace PetaPoco
             }
         }
 
-        public static IEnumerable<T> Get<T>(string catalog, Sql sql)
+		public static IEnumerable<T> GetMicrosoftSQL<T>(string catalog, string sql, params SqlParameter[] args)
+		{
+			try
+			{
+				using (Database db = new Database(GetConnectionString(catalog), ProviderName))
+				{
+					return db.Query<T>(sql, args);
+				}
+			}
+			catch (SqlException ex)
+			{
+				if (ex.Message.StartsWith("P"))
+				{
+					throw new MixERPException(ex.Message, ex);
+				}
+
+				throw new MixERPException(ex.Message, ex);
+			}
+		}
+
+		public static IEnumerable<T> Get<T>(string catalog, Sql sql)
         {
             try
             {

@@ -4,6 +4,7 @@ using MixERP.Net.Entities.Office;
 using MixERP.Net.Framework;
 using Npgsql;
 using PetaPoco;
+using System.Data.SqlClient;
 
 namespace MixERP.Net.FrontEnd.Data.Office
 {
@@ -79,8 +80,17 @@ namespace MixERP.Net.FrontEnd.Data.Office
 
         private static DbSignInResult SignIn(string catalog, int officeId, string userName, string password, string browser, string remoteAddress, string remoteUser, string culture)
         {
-            const string sql = "SELECT * FROM office.sign_in(@0::public.integer_strict, @1::text, @2::text, @3::text, @4::text, @5::text, @6::text);";
-            return Factory.Get<DbSignInResult>(catalog, sql, officeId, userName, password, browser, remoteAddress, remoteUser, culture).FirstOrDefault();
-        }
-    }
+			if (Factory.ProviderName.ToLower().Contains("sqlclient"))
+			{
+				const string msql = "office.sign_in";
+				return Factory.GetMicrosoftSQL<DbSignInResult>(catalog, msql, new SqlParameter("office_id",officeId),
+					new SqlParameter("user_name",userName), new SqlParameter("password",password),
+					new SqlParameter("browser",browser), new SqlParameter("ip_address",remoteAddress),
+					new SqlParameter("remote_user",remoteUser), new SqlParameter("culture",culture)).FirstOrDefault();
+			}
+			const string sql = "SELECT * FROM office.sign_in(@0::public.integer_strict, @1::text, @2::text, @3::text, @4::text, @5::text, @6::text);";
+			return Factory.Get<DbSignInResult>(catalog, sql, officeId, userName, password, browser, remoteAddress, remoteUser, culture).FirstOrDefault();
+
+		}
+	}
 }

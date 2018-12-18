@@ -1,5 +1,112 @@
 ﻿USE [mixerp]
 GO
+CREATE SCHEMA [transactions]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[transactions] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[transactions] TO [public]
+GO
+
+
+USE [mixerp]
+GO
+CREATE SCHEMA [audit]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[audit] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[audit] TO [public]
+GO
+
+USE [mixerp]
+GO
 CREATE SCHEMA [crm]
 GO
 use [mixerp]
@@ -17559,6 +17666,1147 @@ SELECT 'HUMR', 'Human Resources'        UNION ALL
 SELECT 'INFO', 'Information Technology' UNION ALL
 SELECT 'CUST', 'Customer Service';
 GO
+
+CREATE FUNCTION office.get_user_id_by_user_name(@user_name varchar(50))
+RETURNS integer
+AS
+BEGIN
+	DECLARE @ret integer
+    SELECT @ret = office.users.user_id FROM office.users
+    WHERE office.users.user_name=@user_name
+    RETURN @ret
+END
+GO
+
+CREATE TABLE audit.failed_logins
+(
+    failed_login_id                         bigint IDENTITY(1,1) PRIMARY KEY,
+    user_id                                 integer NULL REFERENCES office.users(user_id),
+    user_name                               varchar(50) NOT NULL,
+    office_id                               integer NULL REFERENCES office.offices(office_id),
+    browser                                 varchar(500) NOT NULL,
+    ip_address                              varchar(50) NOT NULL,
+    failed_date_time                        datetime NULL 
+                                            DEFAULT(GETDATE()),
+    remote_user                             varchar(50) NOT NULL,
+    details                                 varchar(250) NULL
+)
+GO
+
+CREATE TABLE policy.lock_outs
+(
+    lock_out_id                             bigint IDENTITY(1,1) PRIMARY KEY,
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    lock_out_time                           datetime NULL 
+                                            DEFAULT(GETDATE()),
+    lock_out_till                           datetime NOT NULL 
+                                            DEFAULT(DATEADD(minute,5,GETDATE()))
+)
+GO
+
+CREATE FUNCTION policy.is_locked_out_till(@user_id integer)
+RETURNS datetime
+AS
+BEGIN
+    DECLARE @ret datetime
+    SELECT @ret = MAX(policy.lock_outs.lock_out_till) FROM policy.lock_outs
+        WHERE policy.lock_outs.user_id=@user_id
+    RETURN @ret
+END
+GO
+
+CREATE FUNCTION office.validate_login
+(
+    @user_name       varchar(50),
+    @password        varchar(100)
+)
+RETURNS bit
+AS
+BEGIN
+    IF EXISTS(
+        SELECT 1 FROM office.users 
+        WHERE office.users.user_name=@user_name
+        AND HASHBYTES('SHA2_512',office.users.password)=@password
+        --The system user must never login.
+        AND office.users.role_id != 
+        (
+            SELECT office.roles.role_id 
+            FROM office.roles 
+            WHERE office.roles.role_code='SYST'
+        )
+    ) 
+        RETURN 1
+     
+    RETURN 0
+END
+GO
+
+CREATE FUNCTION office.get_office_id_by_user_id(@user_id integer)
+RETURNS integer
+AS
+BEGIN
+    DECLARE @ret integer
+    SELECT @ret = office.users.office_id FROM office.users
+        WHERE office.users.user_id=@user_id
+    RETURN @ret
+END
+GO
+
+CREATE FUNCTION office.get_sys_user_id()
+RETURNS integer
+AS
+BEGIN
+    RETURN
+    (
+        SELECT TOP 1 office.users.user_id 
+        FROM office.roles, office.users
+        WHERE office.roles.role_id = office.users.role_id
+        AND office.roles.is_system=0
+    )
+END
+GO
+
+CREATE  FUNCTION [dbo].[SplitParameters](@sText varchar(8000), @sDelim varchar(20) = ' ')
+RETURNS @retArray 
+TABLE (
+	idx smallint Primary Key, 
+	value varchar(8000)
+)
+AS
+BEGIN
+	DECLARE @idx int,
+	@value varchar(8000),
+	@bcontinue bit,
+	@iStrike int,
+	@iDelimlength int
+
+	IF @sDelim = 'Space'
+		BEGIN
+			SET @sDelim = ' '
+		END
+
+	SET @idx = 0
+	SET @sText = LTrim(RTrim(@sText))
+	SET @iDelimlength = DATALENGTH(@sDelim)
+	SET @bcontinue = 1
+
+	if(Len(@sText) = 0)
+		return
+
+	IF NOT ((@iDelimlength = 0) or (@sDelim = 'Empty'))
+	BEGIN
+		WHILE @bcontinue = 1
+		BEGIN
+			IF CHARINDEX(@sDelim, @sText)>0
+			BEGIN
+				SET @value = SUBSTRING(@sText,1,CHARINDEX(@sDelim,@sText)-1)
+				BEGIN
+					INSERT @retArray (idx, value)
+					VALUES (@idx, @value)
+				END
+				SET @iStrike = DATALENGTH(@value) + @iDelimlength
+				SET @idx = @idx + 1
+				SET @sText = LTrim(Right(@sText,DATALENGTH(@sText) - @iStrike))
+			END
+			ELSE
+			BEGIN
+				SET @value = @sText
+				INSERT @retArray (idx, value)
+				VALUES (@idx, @value)
+				SET @bcontinue = 0
+			END
+		END
+	END
+	
+	RETURN
+END
+
+GO
+
+CREATE FUNCTION office.is_parent_office(@parent integer, @child integer)
+RETURNS bit
+AS
+BEGIN
+    IF @parent <> @child 
+	BEGIN
+	DECLARE @ret integer
+	SET @ret=-1;
+	WITH office_cte(office_id, path) AS 
+		(
+            SELECT
+            tn.office_id,  CAST(office_id AS varchar(500)) AS path
+            FROM office.offices AS tn WHERE tn.parent_office_id IS NULL
+		UNION ALL
+            SELECT
+            c.office_id, CAST(p.path + '->' + CAST(c.office_id AS varchar(50)) as varchar(500)) path
+            FROM office_cte AS p, office.offices AS c WHERE parent_office_id = p.office_id
+        )
+		SELECT TOP 1 @ret = n.office_id FROM office_cte AS n WHERE n.office_id = @child
+		AND CAST(@parent as varchar) IN (SELECT fart.value FROM [dbo].SplitParameters(path,'->') fart);
+	IF @ret <>-1
+         RETURN 1
+	END
+        
+    RETURN 0
+END
+GO
+
+CREATE TABLE office.cash_repositories
+(
+    cash_repository_id                      integer IDENTITY(1,1) PRIMARY KEY,
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    cash_repository_code                    varchar(12) NOT NULL,
+    cash_repository_name                    varchar(50) NOT NULL,
+    parent_cash_repository_id               integer NULL REFERENCES office.cash_repositories(cash_repository_id),
+    description                             varchar(100) NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX cash_repositories_cash_repository_code_uix
+ON office.cash_repositories(office_id, cash_repository_code)
+GO
+
+CREATE UNIQUE INDEX cash_repositories_cash_repository_name_uix
+ON office.cash_repositories(office_id, cash_repository_name)
+GO
+
+CREATE TABLE audit.logins
+(
+    login_id                                bigint IDENTITY(1,1) PRIMARY KEY,
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    browser                                 national character varying(500) NOT NULL,
+    ip_address                              national character varying(50) NOT NULL,
+    login_date_time                         datetime NOT NULL 
+                                            DEFAULT(GETDATE()),
+    remote_user                             varchar(50) NOT NULL,
+    culture                                 varchar(12) NOT NULL
+)
+GO
+
+
+CREATE TABLE transactions.transaction_master
+(
+    transaction_master_id                   bigint IDENTITY(1,1) PRIMARY KEY,
+    transaction_counter                     integer NOT NULL, --Sequence of transactions of a date
+    transaction_code                        varchar(50) NOT NULL,
+    book                                    varchar(50) NOT NULL, --Transaction book. Ex. Sales, Purchase, Journal
+    value_date                              date NOT NULL,
+    transaction_ts                          datetime NOT NULL   
+                                            DEFAULT(GETDATE()),
+    login_id                                bigint NOT NULL REFERENCES audit.logins(login_id),
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    sys_user_id                             integer NULL REFERENCES office.users(user_id),
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    cost_center_id                          integer NULL REFERENCES office.cost_centers(cost_center_id),
+    reference_number                        varchar(24) NULL,
+    statement_reference                     text NULL,
+    last_verified_on                        datetime NULL, 
+    verified_by_user_id                     integer NULL REFERENCES office.users(user_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id)   
+                                            DEFAULT(0/*Awaiting verification*/),
+    verification_reason                     varchar(128) NOT NULL   
+                                            CONSTRAINT transaction_master_verification_reason_df   
+                                            DEFAULT(''),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL                                               
+                                            DEFAULT(GETDATE()),
+                                            CONSTRAINT transaction_master_login_id_sys_user_id_chk
+                                                CHECK
+                                                (
+                                                    (
+                                                        login_id IS NULL AND sys_user_id IS NOT NULL
+                                                    )
+
+                                                    OR
+
+                                                    (
+                                                        login_id IS NOT NULL AND sys_user_id IS NULL
+                                                    )
+                                                )
+)
+GO
+
+CREATE UNIQUE INDEX transaction_master_transaction_code_uix
+ON transactions.transaction_master(transaction_code)
+GO
+
+CREATE TABLE transactions.transaction_details
+(
+    transaction_detail_id                   bigint IDENTITY(1,1) PRIMARY KEY,
+    transaction_master_id                   bigint NOT NULL REFERENCES transactions.transaction_master(transaction_master_id),
+    value_date                              date NOT NULL,
+    tran_type                               char(2) NOT NULL,
+    account_id                              bigint NOT NULL REFERENCES core.accounts(account_id),
+    statement_reference                     text NULL,
+    cash_repository_id                      integer NULL REFERENCES office.cash_repositories(cash_repository_id),
+    currency_code                           varchar(12) NULL REFERENCES core.currencies(currency_code),
+    amount_in_currency                      money NOT NULL,
+    local_currency_code                     varchar(12) NULL REFERENCES core.currencies(currency_code),
+    er                                      decimal(24,4) NOT NULL,
+    amount_in_local_currency                money NOT NULL,  
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE TABLE core.parties
+(
+    party_id                                bigint IDENTITY(1,1) PRIMARY KEY,
+    party_type_id                           integer NOT NULL REFERENCES core.party_types(party_type_id),
+    party_code                              varchar(12) NULL,
+    first_name                              varchar(50) NOT NULL,
+    middle_name                             varchar(50) NULL,
+    last_name                               varchar(50) NOT NULL,
+    party_name                              varchar(100) NULL,
+    date_of_birth                           datetime NULL,
+    entity_id                               integer NULL REFERENCES core.entities(entity_id),
+    industry_id                             integer NULL REFERENCES core.industries(industry_id),
+    country_id                              integer NOT NULL REFERENCES core.countries(country_id),
+    state_id                                integer NOT NULL REFERENCES core.states(state_id),
+    zip_code                                varchar(12) NULL,
+    address_line_1                          varchar(128) NULL,   
+    address_line_2                          varchar(128) NULL,
+    street                                  varchar(50) NULL,
+    city                                    varchar(50) NULL,
+    phone                                   varchar(24) NULL,
+    fax                                     varchar(24) NULL,
+    cell                                    varchar(24) NULL,
+    email                                   varchar(128) NULL,
+    url                                     varchar(50) NULL,
+    pan_number                              varchar(50) NULL,
+    sst_number                              varchar(50) NULL,
+    cst_number                              varchar(50) NULL,
+    currency_code                           varchar(12) NOT NULL REFERENCES core.currencies(currency_code),
+    allow_credit                            bit NULL,
+    maximum_credit_period                   smallint NULL,
+    maximum_credit_amount                   money NULL,
+    account_id                              bigint NULL REFERENCES core.accounts(account_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX parties_party_code_uix
+ON core.parties(party_code)
+GO
+
+CREATE TABLE core.bank_accounts
+(
+    account_id                              bigint PRIMARY KEY REFERENCES core.accounts(account_id),                                            
+    maintained_by_user_id                   integer NOT NULL REFERENCES office.users(user_id),
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    bank_name                               varchar(128) NOT NULL,
+    bank_branch                             varchar(128) NOT NULL,
+    bank_contact_number                     varchar(128) NULL,
+    bank_address                            text NULL,
+    bank_account_number                     varchar(128) NULL,
+    bank_account_type                       varchar(128) NULL,
+    relationship_officer_name               varchar(128) NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+
+CREATE TABLE transactions.customer_receipts
+(
+    receipt_id                              bigint IDENTITY(1,1) PRIMARY KEY,
+    transaction_master_id                   bigint NOT NULL REFERENCES transactions.transaction_master(transaction_master_id),
+    party_id                                bigint NOT NULL REFERENCES core.parties(party_id),
+    currency_code                           varchar(12) NOT NULL REFERENCES core.currencies(currency_code),
+    amount                                  money NOT NULL,
+    er_debit                                decimal(24,4) NOT NULL,
+    er_credit                               decimal(24,4) NOT NULL,
+    cash_repository_id                      integer NULL REFERENCES office.cash_repositories(cash_repository_id),
+    posted_date                             date NULL,
+    bank_account_id                         bigint NULL REFERENCES core.bank_accounts(account_id),
+    bank_instrument_code                    varchar(128) NULL   
+                                            CONSTRAINT customer_receipt_bank_instrument_code_df   
+                                            DEFAULT(''),
+    bank_tran_code                          varchar(128) NULL   
+                                            CONSTRAINT customer_receipt_bank_tran_code_df   
+                                            DEFAULT('')
+)
+GO
+
+CREATE INDEX customer_receipts_transaction_master_id_inx
+ON transactions.customer_receipts(transaction_master_id)
+GO
+
+CREATE INDEX customer_receipts_party_id_inx
+ON transactions.customer_receipts(party_id)
+GO
+
+CREATE INDEX customer_receipts_currency_code_inx
+ON transactions.customer_receipts(currency_code)
+GO
+
+CREATE INDEX customer_receipts_cash_repository_id_inx
+ON transactions.customer_receipts(cash_repository_id)
+GO
+
+CREATE INDEX customer_receipts_posted_date_inx
+ON transactions.customer_receipts(posted_date)
+GO
+
+CREATE INDEX customer_receipts_bank_account_id_inx
+ON transactions.customer_receipts(bank_account_id)
+GO
+
+CREATE TABLE core.salespersons
+(
+    salesperson_id                          int IDENTITY(1,1) PRIMARY KEY,
+    sales_team_id                           integer NOT NULL REFERENCES core.sales_teams(sales_team_id),
+    salesperson_code                        national character varying(12) NOT NULL,
+    salesperson_name                        national character varying(100) NOT NULL,
+    address                                 national character varying(100) NOT NULL,
+    contact_number                          national character varying(50) NOT NULL,
+    commission_rate                         decimal(24,4) NOT NULL   
+                                            DEFAULT(0),
+    account_id                              bigint NOT NULL REFERENCES core.accounts(account_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX salespersons_salesperson_name_uix
+ON core.salespersons(salesperson_name)
+GO
+
+
+CREATE TABLE core.late_fee
+(
+    late_fee_id                                 int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    late_fee_code                               varchar(12) NOT NULL,
+    late_fee_name                               varchar(50) NOT NULL,
+    is_flat_amount                              bit NOT NULL CONSTRAINT late_fee_is_flat_amount_df DEFAULT(0),
+    rate                                        decimal(24, 4) NOT NULL,
+    audit_user_id                               integer NULL REFERENCES office.users(user_id),
+    audit_ts                                    datetime NULL 
+                                                DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX late_fee_late_fee_code_uix
+ON core.late_fee(late_fee_code)
+GO
+
+CREATE UNIQUE INDEX late_fee_late_fee_name_uix
+ON core.late_fee(late_fee_name)
+GO
+
+CREATE INDEX late_fee_is_flat_amount_inx
+ON core.late_fee(is_flat_amount)
+GO
+
+CREATE TABLE core.payment_terms
+(
+    payment_term_id                             int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    payment_term_code                           varchar(12) NOT NULL,
+    payment_term_name                           varchar(50) NOT NULL,
+    due_on_date                                 bit NOT NULL 
+                                                CONSTRAINT payment_terms_due_on_specific_date_df DEFAULT(0),
+    due_days                                    integer NOT NULL CONSTRAINT payment_terms_days_df DEFAULT(0),
+    due_frequency_id                            integer NULL REFERENCES core.frequencies(frequency_id),
+    grace_peiod                                 integer NOT NULL CONSTRAINT payment_terms_grace_period_df DEFAULT(0),
+    late_fee_id                                 integer NULL REFERENCES core.late_fee(late_fee_id),
+    late_fee_posting_frequency_id               integer NULL REFERENCES core.frequencies(frequency_id),
+    audit_user_id                               integer NULL REFERENCES office.users(user_id),
+    audit_ts                                    datetime NULL   
+                                                DEFAULT(GETDATE())        
+)
+GO
+
+
+CREATE UNIQUE INDEX payment_terms_payment_term_code_uix
+ON core.payment_terms(payment_term_code)
+GO
+
+CREATE UNIQUE INDEX payment_terms_payment_term_name_uix
+ON core.payment_terms(payment_term_name)
+GO
+
+CREATE INDEX payment_terms_due_on_date_inx
+ON core.payment_terms(due_on_date)
+GO
+
+
+CREATE INDEX payment_terms_due_frequency_id_inx
+ON core.payment_terms(due_frequency_id)
+GO
+
+CREATE TABLE core.shipping_addresses
+(
+    shipping_address_id                     bigint IDENTITY(1,1) PRIMARY KEY,
+    shipping_address_code                   varchar(24) NOT NULL,
+    party_id                                bigint NOT NULL REFERENCES core.parties(party_id),
+    country_id                              integer NOT NULL REFERENCES core.countries(country_id),
+    state_id                                integer NOT NULL REFERENCES core.states(state_id),
+    zip_code                                varchar(12) NULL,
+    address_line_1                          varchar(128) NULL,   
+    address_line_2                          varchar(128) NULL,
+    street                                  varchar(128) NULL,
+    city                                    varchar(128) NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX shipping_addresses_shipping_address_code_uix
+ON core.shipping_addresses(shipping_address_code, party_id)
+GO
+
+CREATE TABLE core.sales_taxes
+(
+    sales_tax_id                            int IDENTITY(1,1) PRIMARY KEY,
+    tax_master_id                           integer NOT NULL REFERENCES core.tax_master(tax_master_id),
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    sales_tax_code                          varchar(24) NOT NULL,
+    sales_tax_name                          varchar(50) NOT NULL,
+    is_exemption                            bit NOT NULL DEFAULT(0),        
+    tax_base_amount_type_code               varchar(12) NOT NULL 
+                                            REFERENCES core.tax_base_amount_types(tax_base_amount_type_code)
+                                            DEFAULT('P'),
+    rate                                    decimal(24,4) NOT NULL DEFAULT(0), --Tax rate should be zero for parent tax.
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+                                            
+)
+GO
+
+CREATE UNIQUE INDEX sales_taxes_sales_tax_code_uix
+ON core.sales_taxes(office_id, sales_tax_code)
+GO
+
+CREATE UNIQUE INDEX sales_taxes_sales_tax_name_uix
+ON core.sales_taxes(office_id, sales_tax_name)
+GO
+
+CREATE TABLE office.stores
+(
+    store_id                                bigint IDENTITY(1,1) PRIMARY KEY,
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    store_code                              varchar(12) NOT NULL,
+    store_name                              varchar(50) NOT NULL,
+    address                                 varchar(50) NULL,
+    store_type_id                           integer NOT NULL REFERENCES office.store_types(store_type_id),
+    allow_sales                             bit NOT NULL   
+                                            DEFAULT(1),
+    sales_tax_id                            integer NOT NULL REFERENCES core.sales_taxes(sales_tax_id),
+    default_cash_account_id                 bigint NOT NULL REFERENCES core.accounts(account_id),
+    default_cash_repository_id              integer NOT NULL REFERENCES office.cash_repositories(cash_repository_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+);
+
+CREATE UNIQUE INDEX stores_store_code_uix
+ON office.stores(office_id, store_code)
+GO
+
+CREATE UNIQUE INDEX stores_store_name_uix
+ON office.stores(office_id, store_name)
+GO
+
+
+
+
+CREATE TABLE transactions.stock_master
+(
+    stock_master_id                         bigint IDENTITY(1,1) PRIMARY KEY,
+    transaction_master_id                   bigint NOT NULL REFERENCES transactions.transaction_master(transaction_master_id),
+    value_date                              date NOT NULL,
+    party_id                                bigint NULL REFERENCES core.parties(party_id),
+    salesperson_id                          integer NULL REFERENCES core.salespersons(salesperson_id),
+    price_type_id                           integer NULL REFERENCES core.price_types(price_type_id),
+    is_credit                               bit NOT NULL   
+                                            CONSTRAINT stock_master_is_credit_df   
+                                            DEFAULT(0),
+    payment_term_id                         integer NULL REFERENCES core.payment_terms(payment_term_id),
+    shipper_id                              integer NULL REFERENCES core.shippers(shipper_id),
+    shipping_address_id                     bigint NULL REFERENCES core.shipping_addresses(shipping_address_id),
+    shipping_charge                         money NOT NULL   
+                                            CONSTRAINT stock_master_shipping_charge_df   
+                                            DEFAULT(0),
+    store_id                                bigint NULL REFERENCES office.stores(store_id),
+    non_taxable                             bit NOT NULL DEFAULT(0),
+    cash_repository_id                      integer NULL REFERENCES office.cash_repositories(cash_repository_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX stock_master_transaction_master_id_uix
+ON transactions.stock_master(transaction_master_id)
+GO
+
+
+CREATE TABLE core.sales_tax_exempts
+(
+    sales_tax_exempt_id                     int IDENTITY(1,1) PRIMARY KEY,
+    tax_master_id                           integer NOT NULL REFERENCES core.tax_master(tax_master_id),
+    sales_tax_exempt_code                   varchar(12),
+    sales_tax_exempt_name                   varchar(100),
+    tax_exempt_type_id                      integer NOT NULL REFERENCES core.tax_exempt_types(tax_exempt_type_id),
+    store_id                                integer NOT NULL,
+    sales_tax_id                            integer NOT NULL REFERENCES core.sales_taxes(sales_tax_id),
+    valid_from                              date NOT NULL,
+    valid_till                              date NOT NULL,
+                                            CONSTRAINT sales_tax_exempts_valid_till_chk 
+                                            CHECK(valid_till >= valid_from),
+    price_from                              money NOT NULL DEFAULT(0),
+    price_to                                money NOT NULL DEFAULT(0),
+                                            CONSTRAINT sales_tax_exempts_price_to_chk 
+                                            CHECK(price_to >= price_from),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX sales_tax_exempts_sales_tax_exempt_code_uix
+ON core.sales_tax_exempts(sales_tax_exempt_code)
+GO
+
+CREATE UNIQUE INDEX sales_tax_exempts_sales_tax_exempt_name_uix
+ON core.sales_tax_exempts(sales_tax_exempt_name)
+GO
+
+
+
+CREATE TABLE core.sales_tax_exempt_details
+(
+    sales_tax_exempt_detail_id              int IDENTITY(1,1) PRIMARY KEY,
+    sales_tax_exempt_id                     integer NOT NULL REFERENCES core.sales_tax_exempts(sales_tax_exempt_id),
+    entity_id                               integer NULL REFERENCES core.entities(entity_id),
+    industry_id                             integer NULL REFERENCES core.industries(industry_id),    
+    party_id                                bigint NULL REFERENCES core.parties(party_id),
+    party_type_id                           integer NULL REFERENCES core.party_types(party_type_id),
+    item_id                                 integer NULL /*REFERENCES core.items(item_id)*/,
+    item_group_id                           integer NULL /*REFERENCES core.item_groups(item_group_id)*/, --Create trigger to disallow adding item group which is not allowed in sales.
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE TABLE core.item_groups
+(
+    item_group_id                           int IDENTITY(1,1) PRIMARY KEY,
+    item_group_code                         varchar(12) NOT NULL,
+    item_group_name                         varchar(50) NOT NULL,
+    exclude_from_purchase                   bit NOT NULL   
+                                            CONSTRAINT item_groups_exclude_from_purchase_df   
+                                            DEFAULT(0),
+    exclude_from_sales                      bit NOT NULL   --Todo: Create trigger to disallow switching this on when table "core.sales_tax_exempt_details" depends on it.
+                                            CONSTRAINT item_groups_exclude_from_sales_df   
+                                            DEFAULT(0),
+    sales_tax_id                            integer NOT NULL REFERENCES core.sales_taxes(sales_tax_id),
+    sales_account_id                        bigint NOT NULL REFERENCES core.accounts(account_id),
+    sales_discount_account_id               bigint NOT NULL REFERENCES core.accounts(account_id),
+    sales_return_account_id                 bigint NOT NULL REFERENCES core.accounts(account_id),
+    purchase_account_id                     bigint NOT NULL REFERENCES core.accounts(account_id),
+    purchase_discount_account_id            bigint NOT NULL REFERENCES core.accounts(account_id),
+    inventory_account_id                    bigint NOT NULL REFERENCES core.accounts(account_id),
+    cost_of_goods_sold_account_id           bigint NOT NULL REFERENCES core.accounts(account_id),    
+    parent_item_group_id                    integer NULL REFERENCES core.item_groups(item_group_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+ALTER TABLE core.sales_tax_exempt_details
+ADD FOREIGN KEY(item_group_id) REFERENCES core.item_groups(item_group_id)
+GO
+
+ALTER TABLE core.state_sales_taxes
+ADD FOREIGN KEY(item_group_id) REFERENCES core.item_groups(item_group_id)
+GO
+
+ALTER TABLE core.county_sales_taxes
+ADD FOREIGN KEY(item_group_id) REFERENCES core.item_groups(item_group_id)
+GO
+
+
+CREATE UNIQUE INDEX item_groups_item_group_code_uix
+ON core.item_groups(item_group_code)
+GO
+
+CREATE UNIQUE INDEX item_groups_item_group_name_uix
+ON core.item_groups(item_group_name)
+GO
+
+
+
+
+CREATE TABLE core.items
+(
+    item_id                                 int IDENTITY(1,1) PRIMARY KEY,
+    item_code                               varchar(12) NOT NULL,
+    item_name                               varchar(150) NOT NULL,
+    item_group_id                           integer NOT NULL REFERENCES core.item_groups(item_group_id),
+    item_type_id                            integer NOT NULL REFERENCES core.item_types(item_type_id),
+    brand_id                                integer NOT NULL REFERENCES core.brands(brand_id),
+    preferred_supplier_id                   bigint NOT NULL REFERENCES core.parties(party_id),
+    lead_time_in_days                       integer NOT NULL   
+                                            DEFAULT(0),
+    weight_in_grams                         float NOT NULL   
+                                            DEFAULT(0),  
+    width_in_centimeters                    float NOT NULL   
+                                            DEFAULT(0),
+    height_in_centimeters                   float NOT NULL   
+                                            DEFAULT(0),
+    length_in_centimeters                   float NOT NULL   
+                                            DEFAULT(0),
+    machinable                              bit NOT NULL   
+                                            DEFAULT(0),
+    preferred_shipping_mail_type_id         integer NULL REFERENCES core.shipping_mail_types(shipping_mail_type_id),
+    shipping_package_shape_id               integer NULL REFERENCES core.shipping_package_shapes(shipping_package_shape_id),    
+    unit_id                                 integer NOT NULL REFERENCES core.units(unit_id),
+    hot_item                                bit NOT NULL,
+    cost_price                              money NOT NULL,
+    cost_price_includes_tax                 bit NOT NULL   
+                                            CONSTRAINT items_cost_price_includes_tax_df                                               
+                                            DEFAULT(0),
+    selling_price                           money NOT NULL,
+    selling_price_includes_tax              bit NOT NULL   
+                                            CONSTRAINT items_selling_price_includes_tax_df 
+                                            DEFAULT(0),
+    sales_tax_id                            integer NOT NULL REFERENCES core.sales_taxes(sales_tax_id),
+    reorder_unit_id                         integer NOT NULL REFERENCES core.units(unit_id),
+    reorder_level                           integer NOT NULL,
+    reorder_quantity                        integer NOT NULL
+                                            CONSTRAINT items_reorder_quantity_df
+                                            DEFAULT(0),
+    maintain_stock                          bit NOT NULL   
+                                            DEFAULT(1),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())
+)
+GO
+
+ALTER TABLE core.sales_tax_exempt_details
+ADD FOREIGN KEY(item_id) REFERENCES core.items(item_id)
+GO
+
+
+CREATE UNIQUE INDEX items_item_name_uix
+ON core.items(item_name)
+GO
+
+CREATE TABLE transactions.stock_details
+(
+    stock_detail_id                         bigint IDENTITY(1,1) PRIMARY KEY,
+    value_date                              date NOT NULL,
+    stock_master_id                         bigint NOT NULL REFERENCES transactions.stock_master(stock_master_id),
+    tran_type                               char(2) NOT NULL,
+    store_id                                bigint NULL REFERENCES office.stores(store_id),
+    item_id                                 integer NOT NULL REFERENCES core.items(item_id),
+    quantity                                integer NOT NULL,
+    unit_id                                 integer NOT NULL REFERENCES core.units(unit_id),
+    base_quantity                           decimal NOT NULL,
+    base_unit_id                            integer NOT NULL REFERENCES core.units(unit_id),
+    price                                   money NOT NULL,
+    cost_of_goods_sold                      money NOT NULL DEFAULT(0),
+    discount                                money NOT NULL   
+                                            CONSTRAINT stock_details_discount_df   
+                                            DEFAULT(0),
+    shipping_charge                         money NOT NULL   
+                                            CONSTRAINT stock_master_shipping_charge_def   
+                                            DEFAULT(0),
+    sales_tax_id                            integer NULL REFERENCES core.sales_taxes(sales_tax_id),
+    tax                                     money NOT NULL   
+                                            CONSTRAINT stock_details_tax_df   
+                                            DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+
+
+
+CREATE TABLE core.sales_tax_details
+(
+    sales_tax_detail_id                     int IDENTITY(1,1) PRIMARY KEY,
+    sales_tax_id                            integer NOT NULL REFERENCES core.sales_taxes(sales_tax_id),
+    sales_tax_type_id                       integer NOT NULL REFERENCES core.sales_tax_types(sales_tax_type_id),
+    priority                                smallint NOT NULL DEFAULT(0),
+    sales_tax_detail_code                   varchar(24) NOT NULL,
+    sales_tax_detail_name                   varchar(50) NOT NULL,
+    based_on_shipping_address               bit NOT NULL DEFAULT(1),
+    check_nexus                             bit NOT NULL DEFAULT(1),
+    applied_on_shipping_charge              bit NOT NULL DEFAULT(1),
+    state_sales_tax_id                      integer NULL REFERENCES core.state_sales_taxes(state_sales_tax_id),
+    county_sales_tax_id                     integer NULL REFERENCES core.county_sales_taxes(county_sales_tax_id),
+    tax_rate_type_code                      varchar(4) NOT NULL 
+                                            REFERENCES core.tax_rate_types(tax_rate_type_code)
+                                            DEFAULT('P'),
+    rate                                    decimal(24,4) NOT NULL,
+                                            
+    reporting_tax_authority_id              integer NOT NULL REFERENCES core.tax_authorities(tax_authority_id),
+    collecting_tax_authority_id             integer NOT NULL REFERENCES core.tax_authorities(tax_authority_id),
+    collecting_account_id                   bigint NOT NULL REFERENCES core.accounts(account_id),
+    use_tax_collecting_account_id           bigint NULL REFERENCES core.accounts(account_id),
+    rounding_method_code                    varchar(4) NULL REFERENCES core.rounding_methods(rounding_method_code),
+    rounding_decimal_places                 integer NOT NULL DEFAULT(2),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX sales_tax_details_sales_tax_detail_code_uix
+ON core.sales_tax_details(sales_tax_detail_code)
+GO
+
+CREATE UNIQUE INDEX sales_tax_details_sales_tax_detail_name_uix
+ON core.sales_tax_details(sales_tax_detail_name)
+GO
+
+CREATE TABLE transactions.stock_tax_details
+(
+    stock_detail_id                         bigint NOT NULL REFERENCES transactions.stock_details(stock_detail_id),
+    sales_tax_detail_id                     integer NOT NULL REFERENCES core.sales_tax_details(sales_tax_detail_id),
+    state_sales_tax_id                      integer NULL REFERENCES core.state_sales_taxes(state_sales_tax_id),
+    county_sales_tax_id                     integer NULL REFERENCES core.county_sales_taxes(county_sales_tax_id),
+    principal                               money NOT NULL,
+    rate                                    decimal(24,4) NOT NULL,
+    tax                                     money NOT NULL
+)
+GO
+
+
+
+CREATE TABLE transactions.stock_return
+(
+    sales_return_id                         bigint IDENTITY(1,1) PRIMARY KEY, 
+    transaction_master_id                   bigint NOT NULL REFERENCES transactions.transaction_master(transaction_master_id),
+    return_transaction_master_id            bigint NOT NULL REFERENCES transactions.transaction_master(transaction_master_id)
+)
+GO
+
+CREATE TABLE transactions.non_gl_stock_master
+(
+    non_gl_stock_master_id                  bigint IDENTITY(1,1) PRIMARY KEY,
+    value_date                              date NOT NULL,
+    book                                    varchar(48) NOT NULL,
+    party_id                                bigint NULL REFERENCES core.parties(party_id),
+    price_type_id                           integer NULL REFERENCES core.price_types(price_type_id),
+    transaction_ts                          datetime NOT NULL   
+                                            DEFAULT(GETDATE()),
+    login_id                                bigint NOT NULL REFERENCES audit.logins(login_id),
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    reference_number                        varchar(24) NULL,
+    statement_reference                     text NULL,
+    non_taxable                             bit NOT NULL DEFAULT(0),
+    salesperson_id                          integer NULL REFERENCES core.salespersons(salesperson_id),
+    shipper_id                              integer NULL REFERENCES core.shippers(shipper_id),
+    shipping_address_id                     bigint NULL REFERENCES core.shipping_addresses(shipping_address_id),
+    shipping_charge                         money NOT NULL   
+                                            CONSTRAINT stockmastershippingchargedef   
+                                            DEFAULT(0),
+    store_id                                bigint NULL REFERENCES office.stores(store_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE TABLE transactions.non_gl_stock_details
+(
+    non_gl_stock_detail_id                  bigint IDENTITY(1,1) PRIMARY KEY,
+    non_gl_stock_master_id                  bigint NOT NULL REFERENCES transactions.non_gl_stock_master(non_gl_stock_master_id),
+    value_date                              date NOT NULL,
+    item_id                                 integer NOT NULL REFERENCES core.items(item_id),
+    quantity                                integer NOT NULL,
+    unit_id                                 integer NOT NULL REFERENCES core.units(unit_id),
+    base_quantity                           decimal NOT NULL,
+    base_unit_id                            integer NOT NULL REFERENCES core.units(unit_id),
+    price                                   money NOT NULL,
+    discount                                money NOT NULL   
+                                            CONSTRAINT non_gl_stock_details_discount_df   
+                                            DEFAULT(0),
+    shipping_charge                         money NOT NULL   
+                                            CONSTRAINT stock_master_shippingchargedf   
+                                            DEFAULT(0),
+    sales_tax_id                            integer NULL REFERENCES core.sales_taxes(sales_tax_id),
+    tax                                     money NOT NULL   
+                                            CONSTRAINT stock_detailstaxdf   
+                                            DEFAULT(0),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL   
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE TABLE transactions.non_gl_stock_tax_details
+(
+    non_gl_stock_detail_id                  bigint NOT NULL REFERENCES transactions.non_gl_stock_details(non_gl_stock_detail_id),
+    sales_tax_detail_id                     integer NOT NULL REFERENCES core.sales_tax_details(sales_tax_detail_id),
+    state_sales_tax_id                      integer NULL REFERENCES core.state_sales_taxes(state_sales_tax_id),
+    county_sales_tax_id                     integer NULL REFERENCES core.county_sales_taxes(county_sales_tax_id),
+    principal                               money NOT NULL,
+    rate                                    decimal(24,4) NOT NULL,
+    tax                                     money NOT NULL
+)
+GO
+
+--This table stores information of quotations
+--which were upgraded to order(s).
+CREATE TABLE transactions.non_gl_stock_master_relations
+(
+    non_gl_stock_master_relation_id         bigint IDENTITY(1,1) PRIMARY KEY, 
+    order_non_gl_stock_master_id            bigint NOT NULL REFERENCES transactions.non_gl_stock_master(non_gl_stock_master_id),
+    quotation_non_gl_stock_master_id        bigint NOT NULL REFERENCES transactions.non_gl_stock_master(non_gl_stock_master_id)
+)
+GO
+
+
+
+--This table stores information of Non GL Stock Transactions such as orders and quotations
+--which were upgraded to deliveries or invoices.
+CREATE TABLE transactions.stock_master_non_gl_relations
+(
+    stock_master_non_gl_relation_id         bigint IDENTITY(1,1) PRIMARY KEY, 
+    stock_master_id                         bigint NOT NULL REFERENCES transactions.stock_master(stock_master_id),
+    non_gl_stock_master_id                  bigint NOT NULL REFERENCES transactions.non_gl_stock_master(non_gl_stock_master_id)
+)
+GO
+
+CREATE TABLE transactions.routines
+(
+    routine_id                              int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    "order"                                 integer NOT NULL,
+    routine_code                            varchar(12) NOT NULL,
+    routine_name                            varchar(100) NOT NULL UNIQUE,
+    status                                  bit NOT NULL CONSTRAINT routines_status_df DEFAULT(1)
+)
+GO
+
+CREATE UNIQUE INDEX routines_routine_code_uix
+ON transactions.routines(routine_code)
+GO
+
+
+CREATE TABLE transactions.day_operation
+(
+    day_id                                  bigint IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    office_id                               integer NOT NULL REFERENCES office.offices(office_id),
+    value_date                              date NOT NULL,
+    started_on                              datetime NOT NULL,
+    started_by                              integer NOT NULL REFERENCES office.users(user_id),    
+    completed_on                            datetime NULL,
+    completed_by                            integer NULL REFERENCES office.users(user_id),
+    completed                               bit NOT NULL 
+                                            CONSTRAINT day_operation_completed_df DEFAULT(0)                                           
+)
+GO
+
+CREATE UNIQUE INDEX day_operation_value_date_uix
+ON transactions.day_operation(value_date)
+GO
+
+CREATE INDEX day_operation_completed_on_inx
+ON transactions.day_operation(completed_on)
+GO
+
+
+
+CREATE TABLE transactions.day_operation_routines
+(
+    day_operation_routine_id                bigint IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    day_id                                  bigint NOT NULL REFERENCES transactions.day_operation(day_id),
+    routine_id                              integer NOT NULL REFERENCES transactions.routines(routine_id),
+    started_on                              datetime NOT NULL,
+    completed_on                            datetime NULL
+)
+GO
+
+CREATE INDEX day_operation_routines_started_on_inx
+ON transactions.day_operation_routines(started_on)
+GO
+
+CREATE INDEX day_operation_routines_completed_on_inx
+ON transactions.day_operation_routines(completed_on)
+GO
+
+CREATE FUNCTION policy.is_restricted_mode()
+RETURNS bit
+AS
+BEGIN
+    IF EXISTS
+    (
+        SELECT TOP 1 0 FROM transactions.day_operation
+        WHERE completed = 0
+        
+    ) 
+        RETURN 1
+
+    RETURN 0
+END
+GO
+
+CREATE FUNCTION policy.is_elevated_user(@user_id integer)
+RETURNS bit
+AS
+BEGIN
+    IF EXISTS
+    (
+        SELECT 0 FROM office.users
+        WHERE user_id = @user_id
+        AND elevated=1
+    ) 
+        RETURN 1
+
+    RETURN 0
+END
+GO
+
+
+CREATE FUNCTION office.can_login(@user_id integer, @office_id integer)
+RETURNS @retTable TABLE
+(
+	result         bit,
+	message        varchar(500)
+)
+AS
+BEGIN
+	DECLARE @office_id_local      integer
+	DECLARE @result         bit;
+	DECLARE @message        varchar(500);
+
+    SET @office_id_local = office.get_office_id_by_user_id(@user_id)
+
+    IF @user_id = office.get_sys_user_id() 
+        SET @result = 0
+    
+
+    IF @office_id=@office_id_local 
+        SET @result = 1;
+    ELSE
+        IF office.is_parent_office(@office_id_local,@office_id)=1 
+            SET @result = 1;
+       
+
+    IF @result=1 
+        IF policy.is_restricted_mode()=1 AND NOT (policy.is_elevated_user(@user_id)=1) 
+		BEGIN
+            SET @result = 1
+            SET @message = 'You need to have an elevated priviledge to login interactively during end of day operation'
+        END
+
+     INSERT INTO @retTable(result,message) VALUES (@result, @message)
+	 return 
+END
+GO
+
+CREATE FUNCTION office.get_office_name_by_id(@office_id integer)
+RETURNS  varchar(150)
+AS
+BEGIN
+    RETURN
+    (
+        SELECT office.offices.office_name FROM office.offices
+        WHERE office.offices.office_id=@office_id
+    )
+END
+GO
+
+CREATE PROCEDURE office.sign_in
+(
+    @office_id       integer, 
+    @user_name       varchar(50), 
+    @password        varchar(100), 
+    @browser         varchar(500), 
+    @ip_address      varchar(50), 
+    @remote_user     varchar(50), 
+    @culture         varchar(50)
+)
+AS
+
+BEGIN
+    DECLARE @user_id            integer
+    DECLARE @lock_out_till      datetime
+    DECLARE @result             bit
+    DECLARE @login_id           bigint
+    DECLARE @message            varchar(500)
+
+	SET @login_id = 0
+
+    SET @user_id  =office.get_user_id_by_user_name(@user_name);
+    
+    IF @user_id IS NULL BEGIN
+        INSERT INTO audit.failed_logins(user_name,browser,ip_address,remote_user,details)
+        VALUES( @user_name, @browser, @ip_address, @remote_user, 'Invalid user name.')
+        SET @message = 'Invalid login attempt.'
+	END
+    ELSE
+	BEGIN
+        SET @lock_out_till = policy.is_locked_out_till(@user_id);
+	
+
+		IF NOT ((@lock_out_till IS NOT NULL) AND (@lock_out_till>GETDATE())) 
+		BEGIN
+			IF office.validate_login(@user_name, @password)=1 BEGIN
+				SELECT @result=result, @message=message FROM office.can_login(@user_id,@office_id) 
+				IF @result = 1 
+				BEGIN
+					INSERT INTO audit.logins(office_id,user_id,browser,ip_address,remote_user, culture)
+                    VALUES(@office_id, @user_id, @browser, @ip_address, @remote_user, @culture)
+					SET @login_id = @@IDENTITY
+				END
+				ELSE
+				BEGIN
+					IF COALESCE(@message, '') = '' 
+					BEGIN
+						SET @message = 'A user from '+ office.get_office_name_by_id(office.get_office_id_by_user_id(@user_id))+' cannot login to ' +  office.get_office_name_by_id(@office_id);
+					END 
+
+					INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+					VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+				END
+			END
+			ELSE
+			BEGIN
+                IF(COALESCE(@message, '') = '') 
+                    SET @message = 'Invalid login attempt.'
+                
+                
+                INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+                VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+            END
+		END
+		ELSE
+		BEGIN
+			SET @message = 'You are locked out till %1$s.' +  CAST(@lock_out_till AS varchar)
+
+			INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+			VALUES(@office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+		END 
+	END
+    SELECT @login_id, @message
+END
+GO
+
 
 SET ANSI_PADDING OFF
 GO

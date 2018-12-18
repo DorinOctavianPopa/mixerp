@@ -250,7 +250,7 @@
     SELECT 'ZM', 'Zambia' UNION ALL 
     SELECT 'ZW', 'Zimbabwe';
 	
-	 DECLARE @country_id integer
+	DECLARE @country_id integer
 
     SELECT @country_id = country_id  
     FROM core.countries WHERE country_code='US';
@@ -1308,7 +1308,9 @@
     ('21007', 'Ballard County', core.get_state_id_by_state_name('Kentucky')),
     ('21009', 'Barren County', core.get_state_id_by_state_name('Kentucky')),
     ('21011', 'Bath County', core.get_state_id_by_state_name('Kentucky')),
-    ('21013', 'Bell County', core.get_state_id_by_state_name('Kentucky')),
+    ('21013', 'Bell County', core.get_state_id_by_state_name('Kentucky'))
+
+	INSERT INTO core.counties(county_code, county_name, state_id) VALUES
     ('21015', 'Boone County', core.get_state_id_by_state_name('Kentucky')),
     ('21017', 'Bourbon County', core.get_state_id_by_state_name('Kentucky')),
     ('21019', 'Boyd County', core.get_state_id_by_state_name('Kentucky')),
@@ -2308,7 +2310,10 @@
     ('38013', 'Burke County', core.get_state_id_by_state_name('North Dakota')),
     ('38015', 'Burleigh County', core.get_state_id_by_state_name('North Dakota')),
     ('38017', 'Cass County', core.get_state_id_by_state_name('North Dakota')),
-    ('38019', 'Cavalier County', core.get_state_id_by_state_name('North Dakota')),
+    ('38019', 'Cavalier County', core.get_state_id_by_state_name('North Dakota'))
+
+
+	INSERT INTO core.counties(county_code, county_name, state_id) VALUES
     ('38021', 'Dickey County', core.get_state_id_by_state_name('North Dakota')),
     ('38023', 'Divide County', core.get_state_id_by_state_name('North Dakota')),
     ('38025', 'Dunn County', core.get_state_id_by_state_name('North Dakota')),
@@ -3308,7 +3313,10 @@
     ('54009', 'Brooke County', core.get_state_id_by_state_name('West Virginia')),
     ('54011', 'Cabell County', core.get_state_id_by_state_name('West Virginia')),
     ('54013', 'Calhoun County', core.get_state_id_by_state_name('West Virginia')),
-    ('54015', 'Clay County', core.get_state_id_by_state_name('West Virginia')),
+    ('54015', 'Clay County', core.get_state_id_by_state_name('West Virginia'))
+
+
+	INSERT INTO core.counties(county_code, county_name, state_id) VALUES
     ('54017', 'Doddridge County', core.get_state_id_by_state_name('West Virginia')),
     ('54019', 'Fayette County', core.get_state_id_by_state_name('West Virginia')),
     ('54021', 'Gilmer County', core.get_state_id_by_state_name('West Virginia')),
@@ -4358,6 +4366,5 @@ SELECT 'MAR', 'Married',                1    UNION ALL
 SELECT 'LIV', 'Living Relationship',    0   UNION ALL
 SELECT 'DIV', 'Divorced',               0   UNION ALL
 SELECT 'WID', 'Widower',                0   UNION ALL
-SELECT 'CIV', 'Civil Union',            1;
+SELECT 'CIV', 'Civil Union',            1
 
-GO
