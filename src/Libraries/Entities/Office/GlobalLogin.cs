@@ -47,7 +47,7 @@ namespace MixERP.Net.Entities.Office
 									CREATE TABLE [dbo].[global_logins]
 														 (
 															  global_login_id         bigint IDENTITY(1,1) NOT NULL PRIMARY KEY,
-															  [catalog]               text NOT NULL,
+															  [catalog]               varchar(100) NOT NULL,
 															  login_id                bigint NOT NULL
 														 );
 								END";

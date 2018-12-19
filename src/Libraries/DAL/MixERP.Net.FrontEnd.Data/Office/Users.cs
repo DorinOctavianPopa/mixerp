@@ -72,23 +72,28 @@ namespace MixERP.Net.FrontEnd.Data.Office
 
         private static long GetGlobalLogin(string catalog, long loginId)
         {
-            const string sql =
+            string sql =
                 "INSERT INTO public.global_logins(catalog, login_id) SELECT @0::text, @1::bigint RETURNING global_login_id;";
 
-            return Factory.Scalar<long>(Factory.MetaDatabase, sql, catalog, loginId);
+			if(Factory.ProviderName.ToLower().Contains("sqlclient"))
+				sql = "INSERT INTO global_logins(catalog, login_id) VALUES (@0, @1);SELECT @@IDENTITY;";
+			return Factory.Scalar<long>(Factory.MetaDatabase, sql, catalog, loginId);
         }
 
         private static DbSignInResult SignIn(string catalog, int officeId, string userName, string password, string browser, string remoteAddress, string remoteUser, string culture)
         {
+			string sql = "SELECT * FROM office.sign_in(@0::public.integer_strict, @1::text, @2::text, @3::text, @4::text, @5::text, @6::text);";
 			if (Factory.ProviderName.ToLower().Contains("sqlclient"))
 			{
-				const string msql = "SELECT * FROM office.sign_in(@office_id, @user_name, @password, @browser, @ip_address, @remote_user, @culture)";
-				return Factory.GetMicrosoftSQL<DbSignInResult>(catalog, msql, new SqlParameter("office_id",officeId),
-					new SqlParameter("user_name",userName), new SqlParameter("password",password),
-					new SqlParameter("browser",browser), new SqlParameter("ip_address",remoteAddress),
-					new SqlParameter("remote_user",remoteUser), new SqlParameter("culture",culture)).FirstOrDefault();
+				sql = "office.sign_in";
+
+				return Factory.Get<DbSignInResult>(catalog, sql, true, new SqlParameter("office_id", officeId),
+					new SqlParameter("user_name", userName), new SqlParameter("password", password),
+					new SqlParameter("browser", browser), new SqlParameter("ip_address", remoteAddress),
+					new SqlParameter("remote_user", remoteUser), new SqlParameter("culture", culture)).FirstOrDefault();
+
 			}
-			const string sql = "SELECT * FROM office.sign_in(@0::public.integer_strict, @1::text, @2::text, @3::text, @4::text, @5::text, @6::text);";
+			
 			return Factory.Get<DbSignInResult>(catalog, sql, officeId, userName, password, browser, remoteAddress, remoteUser, culture).FirstOrDefault();
 
 		}

@@ -70,8 +70,10 @@ namespace MixERP.Net.ApplicationState.Cache
 
         public static MetaLogin GetMetaLogin(long globalLoginId)
         {
-            const string sql = "SELECT * FROM public.global_logins WHERE global_login_id=@0;";
-            MetaLogin login = Factory.Get<MetaLogin>(Factory.MetaDatabase, sql, globalLoginId).FirstOrDefault();
+            string sql = "SELECT * FROM public.global_logins WHERE global_login_id=@0;";
+			if(Factory.ProviderName.ToLower().Contains("sqlclient"))
+				sql = "SELECT * FROM [dbo].global_logins WHERE global_login_id=@0;";
+			MetaLogin login = Factory.Get<MetaLogin>(Factory.MetaDatabase, sql, globalLoginId).FirstOrDefault();
 
             if (login != null)
             {

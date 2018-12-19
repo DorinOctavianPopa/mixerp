@@ -460,7 +460,7 @@ namespace PetaPoco
         static Regex rxParamsPrefix = new Regex(@"(?<!@)@\w+", RegexOptions.Compiled);
         public IDbCommand CreateCommand(IDbConnection connection, string sql, params object[] args)
         {
-				object[] param_list_sql = args;
+
             // Perform named argument replacements
             if (EnableNamedParams)
             {
@@ -472,17 +472,19 @@ namespace PetaPoco
             // Perform parameter prefix replacements
             if (_paramPrefix != "@")
                 sql = rxParamsPrefix.Replace(sql, m => _paramPrefix + m.Value.Substring(1));
-            sql = sql.Replace("@@", "@");		   // <- double @@ escapes a single @
+			if(_dbType != DBType.SqlServer)
+				sql = sql.Replace("@@", "@");		   // <- double @@ escapes a single @
 
             // Create the command and add parameters
             IDbCommand cmd = connection.CreateCommand();
             cmd.Connection = connection;
             cmd.CommandText = sql;
             cmd.Transaction = _transaction;
-            foreach (var item in args)
-            {
-                AddParam(cmd, item, _paramPrefix);
-            }
+
+			foreach (var item in args)
+			{
+				AddParam(cmd, item, _paramPrefix);
+			}
 
             if (_dbType == DBType.Oracle)
             {
@@ -493,14 +495,7 @@ namespace PetaPoco
 				{
 					//Column with name "Key" is not allowed - replace with [Key]
 					cmd.CommandText = cmd.CommandText.Replace("key", "[key]");
-					if (!cmd.CommandText.ToLower().Contains("select"))
-						cmd.CommandType = CommandType.StoredProcedure;
-					foreach (var item in param_list_sql)
-					{
-						if (item.GetType() != typeof(SqlParameter))
-							break;
-						cmd.Parameters.Add(item);
-					}
+
 				}
 
             if (!String.IsNullOrEmpty(sql))
@@ -509,8 +504,33 @@ namespace PetaPoco
             return cmd;
         }
 
-        // Override this to log/capture exceptions
-        public virtual void OnException(Exception x)
+		public IDbCommand CreateCommandSP(IDbConnection connection, string sql, params object[] args)
+		{
+			// Create the command and add parameters
+			IDbCommand cmd = connection.CreateCommand();
+			cmd.Connection = connection;
+			cmd.CommandText = sql;
+			cmd.Transaction = _transaction;
+			cmd.CommandType = CommandType.StoredProcedure;
+
+
+			foreach (var item in args)
+			{
+				cmd.Parameters.Add(item);
+			}
+
+			//Column with name "Key" is not allowed - replace with [Key]
+			cmd.CommandText = cmd.CommandText.Replace("key", "[key]");
+
+	
+			if (!String.IsNullOrEmpty(sql))
+				DoPreExecute(cmd);
+
+			return cmd;
+		}
+
+		// Override this to log/capture exceptions
+		public virtual void OnException(Exception x)
         {
             System.Diagnostics.Debug.WriteLine(x.ToString());
             System.Diagnostics.Debug.WriteLine(LastCommand);
@@ -781,13 +801,15 @@ namespace PetaPoco
             return SkipTake<T>(skip, take, sql.SQL, sql.Arguments);
         }
 
-		// Return an enumerable collection of pocos for Microsoft SQL
-		public IEnumerable<T> Query<T>(string sql, params SqlParameter[] args)
+
+		// Return an enumerable collection of pocos for Microsoft SQL Stored Procedure
+		public IEnumerable<T> QuerySP<T>(string sql, params object[] args)
 		{
+
 			OpenSharedConnection();
 			try
 			{
-				using (var cmd = CreateCommand(_sharedConnection, sql, args))
+				using (var cmd = CreateCommandSP(_sharedConnection, sql, args))
 				{
 					IDataReader r;
 					var pd = PocoData.ForType(typeof(T));
@@ -829,8 +851,6 @@ namespace PetaPoco
 				CloseSharedConnection();
 			}
 		}
-
-
 
 		// Return an enumerable collection of pocos
 		public IEnumerable<T> Query<T>(string sql, params object[] args)

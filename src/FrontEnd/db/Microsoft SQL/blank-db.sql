@@ -1,4 +1,16 @@
-﻿USE [mixerp]
+﻿EXEC sp_configure 'show advanced options', 1
+GO
+-- To update the currently configured value for advanced options.
+RECONFIGURE
+GO
+-- To enable the feature.
+EXEC sp_configure 'xp_cmdshell', 1
+GO
+-- To update the currently configured value for this feature.
+RECONFIGURE
+GO
+
+USE [mixerp]
 GO
 CREATE SCHEMA [transactions]
 GO
@@ -18802,7 +18814,17 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION [office].[sign_in]
+CREATE FUNCTION [office].[get_login_id_by_user_and_office](@user_id int,@office_id int)
+RETURNS bigint
+AS
+BEGIN
+	DECLARE @ret bigint
+    SELECT TOP 1 @ret = login_id  FROM audit.logins WHERE user_id = @user_id AND office_id = @office_id ORDER BY login_id DESC
+	RETURN @ret
+END
+GO
+
+CREATE PROCEDURE office.sign_in
 (
     @office_id       integer, 
     @user_name       varchar(50), 
@@ -18811,11 +18833,6 @@ CREATE FUNCTION [office].[sign_in]
     @ip_address      varchar(50), 
     @remote_user     varchar(50), 
     @culture         varchar(50)
-)
-RETURNS @retTable TABLE
-(
-	login_id       bigint,
-	message        varchar(500)
 )
 AS
 
@@ -18831,8 +18848,8 @@ BEGIN
     SET @user_id  =office.get_user_id_by_user_name(@user_name);
     
     IF @user_id IS NULL BEGIN
-
-        EXEC audit.insert_audit_failed_login NULL,@user_name,@office_id, @browser, @ip_address, @remote_user, 'Invalid user name.'
+        INSERT INTO audit.failed_logins(user_name,browser,ip_address,remote_user,details)
+        VALUES( @user_name, @browser, @ip_address, @remote_user, 'Invalid user name.')
         SET @message = 'Invalid login attempt.'
 	END
     ELSE
@@ -18846,7 +18863,8 @@ BEGIN
 				SELECT @result=result, @message=message FROM office.can_login(@user_id,@office_id) 
 				IF @result = 1 
 				BEGIN
-					EXEC audit.insert_logins  @user_id,@office_id, @browser, @ip_address, @remote_user, @culture
+					INSERT INTO audit.logins(office_id,user_id,browser,ip_address,remote_user, culture)
+                    VALUES(@office_id, @user_id, @browser, @ip_address, @remote_user, @culture)
 					SET @login_id = @@IDENTITY
 				END
 				ELSE
@@ -18856,7 +18874,8 @@ BEGIN
 						SET @message = 'A user from '+ office.get_office_name_by_id(office.get_office_id_by_user_id(@user_id))+' cannot login to ' +  office.get_office_name_by_id(@office_id);
 					END 
 
-					EXEC audit.insert_audit_failed_login  @user_id,@user_name, @office_id, @browser, @ip_address, @remote_user, @message
+					INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+					VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
 				END
 			END
 			ELSE
@@ -18865,22 +18884,139 @@ BEGIN
                     SET @message = 'Invalid login attempt.'
                 
                 
-                EXEC audit.insert_audit_failed_login  @user_id, @user_name,@office_id, @browser, @ip_address, @remote_user, @message
+                INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+                VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
             END
 		END
 		ELSE
 		BEGIN
 			SET @message = 'You are locked out till %1$s.' +  CAST(@lock_out_till AS varchar)
 
-			EXEC audit.insert_audit_failed_login @user_id, @user_name,@office_id, @browser, @ip_address, @remote_user, @message
+			INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
+			VALUES(@office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
 		END 
 	END
-	INSERT INTO @retTable(login_id,message) VALUES (@login_id, @message)
-	RETURN
+    SELECT @login_id login_id, @message message
 END
 GO
 
+CREATE FUNCTION core.get_quotation_valid_duration(@office_id integer)
+RETURNS integer
+AS
+BEGIN
+    DECLARE @ret integer
+	SELECT TOP 1 @ret =  CAST(value AS integer)
+    FROM office.configuration
+    WHERE office_id = @office_id
+    AND config_id = 3
+	RETURN @ret
+END
+GO
 
+CREATE VIEW office.sign_in_view
+AS
+SELECT 
+  logins.login_id, 
+  logins.user_id, 
+  users.role_id, 
+  roles.role_code + ' (' + roles.role_name + ')' AS role, 
+  roles.role_code, 
+  roles.role_name, 
+  roles.is_admin, 
+  roles.is_system, 
+  logins.browser, 
+  logins.ip_address, 
+  logins.login_date_time, 
+  logins.remote_user, 
+  logins.culture, 
+  users.user_name, 
+  users.full_name, 
+  users.elevated, 
+  offices.office_code + ' (' + offices.office_name + ')' AS office,
+  offices.office_id, 
+  offices.office_code, 
+  offices.office_name, 
+  offices.nick_name, 
+  offices.registration_date, 
+  offices.currency_code, 
+  offices.po_box, 
+  offices.address_line_1, 
+  offices.address_line_2, 
+  offices.street, 
+  offices.city, 
+  offices.state, 
+  offices.zip_code, 
+  offices.country, 
+  offices.phone, 
+  offices.fax, 
+  offices.email, 
+  offices.url, 
+  offices.registration_number, 
+  offices.pan_number,
+  offices.allow_transaction_posting,
+  offices.week_start_day,
+  offices.logo_file,
+  core.get_quotation_valid_duration(offices.office_id)  AS sales_quotation_valid_duration
+FROM 
+  audit.logins INNER JOIN  office.users ON logins.user_id = users.user_id
+  INNER JOIN office.offices ON logins.office_id = offices.office_id
+  INNER JOIN office.roles ON users.role_id = roles.role_id
+ 
+ GO
+  
+CREATE TABLE config.scrud_factory
+(
+    [key]               varchar(100) PRIMARY KEY,
+    value               varchar(500),
+    audit_user_id       integer NULL REFERENCES office.users(user_id),
+    audit_ts            datetime NULL 
+                        DEFAULT(GETDATE())
+)
+GO
+
+INSERT INTO config.scrud_factory([key],value)
+SELECT 'CommandPanelCssClass', 'vpad16' UNION ALL
+SELECT 'CommandPanelButtonCssClass', 'small ui button' UNION ALL
+SELECT 'SelectButtonIconCssClass', '' UNION ALL
+SELECT 'CompactButtonIconCssClass', '' UNION ALL
+SELECT 'AllButtonIconCssClass', '' UNION ALL
+SELECT 'AddButtonIconCssClass', '' UNION ALL
+SELECT 'EditButtonIconCssClass', '' UNION ALL
+SELECT 'DeleteButtonIconCssClass', '' UNION ALL
+SELECT 'PrintButtonIconCssClass', '' UNION ALL
+SELECT 'DescriptionCssClass', 'ui large purple header' UNION ALL
+SELECT 'ErrorCssClass', 'error-message' UNION ALL
+SELECT 'ExpressionSeparator', '-->' UNION ALL
+SELECT 'FailiureCssClass', 'big error' UNION ALL
+SELECT 'FormCssClass', 'form-panel ui segment' UNION ALL
+SELECT 'FormPanelCssClass', 'ui form' UNION ALL
+SELECT 'GridPanelCssClass', 'segment' UNION ALL
+SELECT 'GridViewAlternateRowCssClass', '' UNION ALL
+SELECT 'GridViewCssClass', 'ui celled striped definition sortable table segment' UNION ALL
+SELECT 'GridViewDefaultWidth', '100%' UNION ALL
+SELECT 'GridPanelDefaultWidth', '1000px' UNION ALL
+SELECT 'GridPanelStyle', 'padding:2px;overflow:auto;' UNION ALL
+SELECT 'GridViewRowCssClass', 'gridview-row pointer' UNION ALL
+SELECT 'HeaderPath', '~/Reports/Assets/Header.aspx' UNION ALL
+SELECT 'ItemSelectorAnchorCssClass', '' UNION ALL
+SELECT 'ItemSelectorPath', '~/General/ItemSelector.aspx' UNION ALL
+SELECT 'ItemSelectorSelectAnchorCssClass', 'linkbutton' UNION ALL
+SELECT 'ItemSeparator', ',' UNION ALL
+SELECT 'PagerCssClass', 'ui pagination menu vmargin8' UNION ALL
+SELECT 'PagerCurrentPageCssClass', 'active item' UNION ALL
+SELECT 'PagerPageButtonCssClass', 'item' UNION ALL
+SELECT 'PageSize', '10' UNION ALL
+SELECT 'ResourceClassName', 'ScrudResource' UNION ALL
+SELECT 'ButtonCssClass', 'small ui button' UNION ALL
+SELECT 'SaveButtonCssClass', 'small ui button' UNION ALL
+SELECT 'SuccessCssClass', 'ui large green header' UNION ALL
+SELECT 'TemplatePath', '~/Reports/Print.html' UNION ALL
+SELECT 'TempMediaPath', '~/Media/Temp' UNION ALL
+SELECT 'TitleLabelCssClass', 'title' UNION ALL
+SELECT 'UpdateProgressSpinnerImageCssClass', 'ajax-loader' UNION ALL
+SELECT 'UpdateProgressSpinnerImagePath', '~/Static/images/spinner.gif' UNION ALL
+SELECT 'UpdateProgressTemplateCssClass', 'ajax-container'
+GO
 
 
 SET ANSI_PADDING OFF
