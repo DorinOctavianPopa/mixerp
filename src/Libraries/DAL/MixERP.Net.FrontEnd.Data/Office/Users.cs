@@ -82,7 +82,7 @@ namespace MixERP.Net.FrontEnd.Data.Office
         {
 			if (Factory.ProviderName.ToLower().Contains("sqlclient"))
 			{
-				const string msql = "office.sign_in";
+				const string msql = "SELECT * FROM office.sign_in(@office_id, @user_name, @password, @browser, @ip_address, @remote_user, @culture)";
 				return Factory.GetMicrosoftSQL<DbSignInResult>(catalog, msql, new SqlParameter("office_id",officeId),
 					new SqlParameter("user_name",userName), new SqlParameter("password",password),
 					new SqlParameter("browser",browser), new SqlParameter("ip_address",remoteAddress),

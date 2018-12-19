@@ -18731,7 +18731,78 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE office.sign_in
+
+
+CREATE PROCEDURE audit.insert_audit_failed_login
+	-- Add the parameters for the stored procedure here
+	@user_id int,
+    @user_name  varchar(50),
+    @office_id int,
+    @browser varchar(500),
+    @ip_address varchar(50),
+    @remote_user varchar(50),
+    @details varchar(250)
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	INSERT INTO [audit].[failed_logins]
+           ([user_id]
+           ,[user_name]
+           ,[office_id]
+           ,[browser]
+           ,[ip_address]
+           ,[remote_user]
+           ,[details])
+     VALUES
+           (
+			@user_id,
+			@user_name,
+			@office_id,
+			@browser,
+			@ip_address,
+			@remote_user,
+			@details
+			)
+END
+GO
+
+CREATE PROCEDURE audit.insert_logins
+	@user_id int,
+    @office_id int,
+    @browser nvarchar(500),
+    @ip_address nvarchar(50),
+    @remote_user varchar(50),
+    @culture varchar(12)
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	INSERT INTO [audit].[logins]
+           ([user_id]
+           ,[office_id]
+           ,[browser]
+           ,[ip_address]
+           ,[remote_user]
+           ,[culture])
+     VALUES
+           (@user_id,
+			@office_id,
+			@browser,
+			@ip_address,
+			@remote_user,
+			@culture)
+
+
+END
+GO
+
+CREATE FUNCTION [office].[sign_in]
 (
     @office_id       integer, 
     @user_name       varchar(50), 
@@ -18740,6 +18811,11 @@ CREATE PROCEDURE office.sign_in
     @ip_address      varchar(50), 
     @remote_user     varchar(50), 
     @culture         varchar(50)
+)
+RETURNS @retTable TABLE
+(
+	login_id       bigint,
+	message        varchar(500)
 )
 AS
 
@@ -18755,8 +18831,8 @@ BEGIN
     SET @user_id  =office.get_user_id_by_user_name(@user_name);
     
     IF @user_id IS NULL BEGIN
-        INSERT INTO audit.failed_logins(user_name,browser,ip_address,remote_user,details)
-        VALUES( @user_name, @browser, @ip_address, @remote_user, 'Invalid user name.')
+
+        EXEC audit.insert_audit_failed_login NULL,@user_name,@office_id, @browser, @ip_address, @remote_user, 'Invalid user name.'
         SET @message = 'Invalid login attempt.'
 	END
     ELSE
@@ -18770,8 +18846,7 @@ BEGIN
 				SELECT @result=result, @message=message FROM office.can_login(@user_id,@office_id) 
 				IF @result = 1 
 				BEGIN
-					INSERT INTO audit.logins(office_id,user_id,browser,ip_address,remote_user, culture)
-                    VALUES(@office_id, @user_id, @browser, @ip_address, @remote_user, @culture)
+					EXEC audit.insert_logins  @user_id,@office_id, @browser, @ip_address, @remote_user, @culture
 					SET @login_id = @@IDENTITY
 				END
 				ELSE
@@ -18781,8 +18856,7 @@ BEGIN
 						SET @message = 'A user from '+ office.get_office_name_by_id(office.get_office_id_by_user_id(@user_id))+' cannot login to ' +  office.get_office_name_by_id(@office_id);
 					END 
 
-					INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
-					VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+					EXEC audit.insert_audit_failed_login  @user_id,@user_name, @office_id, @browser, @ip_address, @remote_user, @message
 				END
 			END
 			ELSE
@@ -18791,21 +18865,22 @@ BEGIN
                     SET @message = 'Invalid login attempt.'
                 
                 
-                INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
-                VALUES( @office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+                EXEC audit.insert_audit_failed_login  @user_id, @user_name,@office_id, @browser, @ip_address, @remote_user, @message
             END
 		END
 		ELSE
 		BEGIN
 			SET @message = 'You are locked out till %1$s.' +  CAST(@lock_out_till AS varchar)
 
-			INSERT INTO audit.failed_logins(office_id,user_id,user_name,browser,ip_address,remote_user,details)
-			VALUES(@office_id, @user_id, @user_name, @browser, @ip_address, @remote_user, @message)
+			EXEC audit.insert_audit_failed_login @user_id, @user_name,@office_id, @browser, @ip_address, @remote_user, @message
 		END 
 	END
-    SELECT @login_id, @message
+	INSERT INTO @retTable(login_id,message) VALUES (@login_id, @message)
+	RETURN
 END
 GO
+
+
 
 
 SET ANSI_PADDING OFF
