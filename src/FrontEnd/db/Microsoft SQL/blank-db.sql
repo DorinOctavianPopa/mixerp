@@ -18743,76 +18743,8 @@ BEGIN
 END
 GO
 
+--19.12.2018
 
-
-CREATE PROCEDURE audit.insert_audit_failed_login
-	-- Add the parameters for the stored procedure here
-	@user_id int,
-    @user_name  varchar(50),
-    @office_id int,
-    @browser varchar(500),
-    @ip_address varchar(50),
-    @remote_user varchar(50),
-    @details varchar(250)
-AS
-BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-
-    -- Insert statements for procedure here
-	INSERT INTO [audit].[failed_logins]
-           ([user_id]
-           ,[user_name]
-           ,[office_id]
-           ,[browser]
-           ,[ip_address]
-           ,[remote_user]
-           ,[details])
-     VALUES
-           (
-			@user_id,
-			@user_name,
-			@office_id,
-			@browser,
-			@ip_address,
-			@remote_user,
-			@details
-			)
-END
-GO
-
-CREATE PROCEDURE audit.insert_logins
-	@user_id int,
-    @office_id int,
-    @browser nvarchar(500),
-    @ip_address nvarchar(50),
-    @remote_user varchar(50),
-    @culture varchar(12)
-AS
-BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-
-	INSERT INTO [audit].[logins]
-           ([user_id]
-           ,[office_id]
-           ,[browser]
-           ,[ip_address]
-           ,[remote_user]
-           ,[culture])
-     VALUES
-           (@user_id,
-			@office_id,
-			@browser,
-			@ip_address,
-			@remote_user,
-			@culture)
-
-
-END
-GO
 
 CREATE FUNCTION [office].[get_login_id_by_user_and_office](@user_id int,@office_id int)
 RETURNS bigint
@@ -19016,6 +18948,501 @@ SELECT 'TitleLabelCssClass', 'title' UNION ALL
 SELECT 'UpdateProgressSpinnerImageCssClass', 'ajax-loader' UNION ALL
 SELECT 'UpdateProgressSpinnerImagePath', '~/Static/images/spinner.gif' UNION ALL
 SELECT 'UpdateProgressTemplateCssClass', 'ajax-container'
+GO
+
+--19.12.2018 - 2
+
+CREATE FUNCTION transactions.get_value_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+    DECLARE @this_day_id       bigint
+    DECLARE @value_date     datetime
+	DECLARE @this_completed bit
+	DECLARE @this_value_date	datetime
+
+    SELECT TOP 1 @this_day_id = day_id,@this_completed=completed, @this_value_date = value_date  FROM transactions.day_operation
+    WHERE office_id = @office_id
+    AND value_date =
+    (
+        SELECT MAX(value_date)
+        FROM transactions.day_operation
+        WHERE office_id = @office_id
+    ) 
+
+    IF(@this_day_id IS NOT NULL)  BEGIN
+        IF(@this_completed=1) BEGIN
+            SET @value_date  = DATEADD(day,1,@this_value_date)
+		END
+        ELSE
+		BEGIN
+            SET @value_date  = @this_value_date;
+        END 
+    END
+
+    IF(@value_date IS NULL) BEGIN
+        SELECT @value_date = transaction_start_date  
+        FROM office.offices
+        WHERE office_id = @office_id;
+    END
+    
+    RETURN @value_date;
+END
+GO
+
+CREATE FUNCTION core.get_date(@office_id integer)
+RETURNS date
+AS
+
+BEGIN
+    RETURN transactions.get_value_date(@office_id);
+END
+GO
+
+CREATE TABLE core.frequency_setups
+(
+    frequency_setup_id                      int IDENTITY(1,1) PRIMARY KEY,
+    fiscal_year_code                        varchar(12) NOT NULL REFERENCES core.fiscal_year(fiscal_year_code),
+    frequency_setup_code                    varchar(12) NOT NULL,
+    value_date                              datetime NOT NULL UNIQUE,
+    frequency_id                            integer NOT NULL REFERENCES core.frequencies(frequency_id),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL  
+                                            DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX frequency_setups_frequency_setup_code_uix
+ON core.frequency_setups(frequency_setup_code)
+GO
+
+
+CREATE FUNCTION core.get_month_start_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+	DECLARE @date               datetime
+
+    SELECT @date = MAX(value_date)
+    FROM core.frequency_setups
+    WHERE value_date < 
+    (
+        SELECT MIN(value_date)
+        FROM core.frequency_setups
+        WHERE value_date >= transactions.get_value_date(@office_id)
+    )
+
+    IF(@date IS NULL) BEGIN
+        SELECT @date = starts_from 
+        FROM core.fiscal_year;
+    END
+	ELSE
+		SET @date = DATEADD(day,1,@date)
+
+    RETURN @date
+END
+GO
+
+CREATE FUNCTION core.get_month_end_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+
+    RETURN( SELECT MIN(value_date) 
+    FROM core.frequency_setups
+    WHERE value_date >= transactions.get_value_date(@office_id))
+
+END
+GO
+
+CREATE FUNCTION core.get_quarter_start_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+	DECLARE @date               datetime
+
+    SELECT @date = MAX(value_date)
+    FROM core.frequency_setups
+    WHERE value_date < 
+    (
+        SELECT MIN(value_date)
+        FROM core.frequency_setups
+        WHERE value_date >= transactions.get_value_date(@office_id)
+    )
+	AND frequency_id > 2
+
+    IF(@date IS NULL) BEGIN
+        SELECT @date = starts_from 
+        FROM core.fiscal_year;
+    END
+	ELSE
+		SET @date = DATEADD(day,1,@date)
+
+	RETURN @date
+END
+GO
+
+CREATE FUNCTION core.get_quarter_end_date(@office_id integer)
+RETURNS datetime
+AS
+
+BEGIN
+    RETURN( SELECT  MIN(value_date) 
+    FROM core.frequency_setups
+    WHERE value_date >= transactions.get_value_date(@office_id)
+    AND frequency_id > 2
+	)
+END
+GO
+
+CREATE FUNCTION core.get_fiscal_half_start_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+	DECLARE @date               datetime
+
+    SELECT @date = MAX(value_date)
+    FROM core.frequency_setups
+    WHERE value_date < 
+    (
+        SELECT MIN(value_date)
+        FROM core.frequency_setups
+        WHERE value_date >= transactions.get_value_date(@office_id)
+    )
+	AND frequency_id > 3
+
+    IF(@date IS NULL) BEGIN
+        SELECT @date = starts_from 
+        FROM core.fiscal_year;
+    END
+	ELSE
+		SET @date = DATEADD(day,1,@date)
+
+	RETURN @date
+END
+GO
+
+CREATE FUNCTION core.get_fiscal_half_end_date(@office_id integer)
+RETURNS datetime
+AS
+
+BEGIN
+    RETURN( SELECT  MIN(value_date) 
+    FROM core.frequency_setups
+    WHERE value_date >= transactions.get_value_date(@office_id)
+    AND frequency_id > 3
+	)
+END
+GO
+
+CREATE FUNCTION core.get_fiscal_year_start_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+	DECLARE @date               datetime
+    SELECT @date = starts_from 
+    FROM core.fiscal_year
+
+    RETURN @date
+END
+GO
+
+CREATE FUNCTION core.get_fiscal_year_end_date(@office_id integer)
+RETURNS datetime
+AS
+BEGIN
+    RETURN( SELECT MIN(value_date) 
+    FROM core.frequency_setups
+    WHERE value_date >= transactions.get_value_date(@office_id)
+    AND frequency_id > 4
+	)
+END
+GO
+
+CREATE TABLE core.widgets
+(
+    widget_id           int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    widget_name         varchar(100),
+    widget_source       varchar(500) NOT NULL,
+    [row_number]        integer NOT NULL,
+    column_number       integer NOT NULL
+)
+GO
+
+INSERT INTO core.widgets(widget_name, widget_source, row_number, column_number)
+SELECT 'SalesByGeographyWidget',                    '/Modules/Sales/Widgets/SalesByGeographyWidget.ascx',                   1, 1 UNION ALL
+SELECT 'SalesByOfficeWidget',                       '/Modules/Sales/Widgets/SalesByOfficeWidget.ascx',                      2, 1 UNION ALL
+SELECT 'CurrentOfficeSalesByMonthWidget',           '/Modules/Sales/Widgets/CurrentOfficeSalesByMonthWidget.ascx',          2, 2 UNION ALL
+SELECT 'OfficeInformationWidget',                   '/Modules/BackOffice/Widgets/OfficeInformationWidget.ascx',             3, 1 UNION ALL
+SELECT 'LinksWidget',                               '/Modules/BackOffice/Widgets/LinksWidget.ascx',                         3, 2 UNION ALL
+SELECT 'WorkflowWidget',                            '/Modules/Finance/Widgets/WorkflowWidget.ascx',                         3, 4 UNION ALL
+SELECT 'TopSellingProductOfAllTimeWidget',          '/Modules/Sales/Widgets/TopSellingProductOfAllTimeWidget.ascx',         4, 1 UNION ALL
+SELECT 'TopSellingProductOfAllTimeCurrentWidget',   '/Modules/Sales/Widgets/TopSellingProductOfAllTimeCurrentWidget.ascx',  4, 2
+GO
+
+
+
+CREATE UNIQUE INDEX widgets_widget_name_uix
+ON core.widgets(widget_name)
+GO
+
+CREATE UNIQUE INDEX widgets_widget_source_uix
+ON core.widgets(widget_source)
+GO
+
+
+CREATE TABLE core.widget_groups
+(
+    widget_group_name       varchar(100) NOT NULL PRIMARY KEY,
+    is_default              bit NOT NULL DEFAULT(0)
+)
+GO
+
+INSERT INTO core.widget_groups
+SELECT 'Default', 1
+GO
+
+
+
+CREATE TABLE core.widget_setup
+(
+    widget_setup_id         int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    widget_order            integer NOT NULL,
+    widget_group_name       varchar(100) NOT NULL REFERENCES core.widget_groups(widget_group_name),
+    widget_name             varchar(100) NOT NULL REFERENCES core.widgets(widget_name)
+)
+GO
+
+CREATE INDEX widget_setup_widget_order_inx
+ON core.widget_setup(widget_order)
+GO
+
+INSERT INTO core.widget_setup(widget_order, widget_group_name, widget_name)
+SELECT 1, 'Default', 'SalesByGeographyWidget' UNION ALL
+SELECT 2, 'Default', 'SalesByOfficeWidget' UNION ALL
+SELECT 3, 'Default', 'CurrentOfficeSalesByMonthWidget' UNION ALL
+SELECT 4, 'Default', 'OfficeInformationWidget' UNION ALL
+SELECT 5, 'Default', 'LinksWidget' UNION ALL
+SELECT 6, 'Default', 'WorkflowWidget' UNION ALL
+SELECT 7, 'Default', 'TopSellingProductOfAllTimeWidget' UNION ALL
+SELECT 8, 'Default', 'TopSellingProductOfAllTimeCurrentWidget'
+GO
+
+CREATE VIEW core.default_widget_setup_view
+AS
+SELECT
+    core.widget_setup.widget_setup_id,
+    core.widget_setup.widget_order,
+    core.widget_setup.widget_group_name,
+    core.widget_setup.widget_name,
+    core.widgets.widget_source
+FROM core.widget_setup
+INNER JOIN core.widgets
+ON core.widgets.widget_name = core.widget_setup.widget_name
+WHERE widget_group_name =
+(
+    SELECT TOP 1 widget_group_name
+    FROM core.widget_groups
+    WHERE is_default=1
+)
+GO
+
+
+CREATE VIEW transactions.stock_transaction_view
+AS
+SELECT
+        transactions.transaction_master.transaction_master_id,
+        transactions.stock_master.stock_master_id,
+        transactions.stock_details.stock_detail_id,
+        transactions.transaction_master.book,
+        transactions.transaction_master.transaction_counter,
+        transactions.transaction_master.transaction_code,
+        transactions.transaction_master.value_date,
+        transactions.transaction_master.transaction_ts,
+        transactions.transaction_master.login_id,
+        transactions.transaction_master.user_id,
+        transactions.transaction_master.sys_user_id,
+        transactions.transaction_master.office_id,
+        transactions.transaction_master.cost_center_id,
+        transactions.transaction_master.reference_number,
+        transactions.transaction_master.statement_reference,
+        transactions.transaction_master.last_verified_on,
+        transactions.transaction_master.verified_by_user_id,
+        transactions.transaction_master.verification_status_id,
+        transactions.transaction_master.verification_reason,
+        transactions.stock_master.party_id,
+        core.parties.country_id,
+        core.parties.state_id,
+        transactions.stock_master.salesperson_id,
+        transactions.stock_master.price_type_id,
+        transactions.stock_master.is_credit,
+        transactions.stock_master.shipper_id,
+        transactions.stock_master.shipping_address_id,
+        transactions.stock_master.shipping_charge,
+        transactions.stock_master.store_id AS stock_master_store_id,
+        transactions.stock_master.cash_repository_id,
+        transactions.stock_details.tran_type,
+        transactions.stock_details.store_id,
+        transactions.stock_details.item_id,
+        transactions.stock_details.quantity,
+        transactions.stock_details.unit_id,
+        transactions.stock_details.base_quantity,
+        transactions.stock_details.base_unit_id,
+        transactions.stock_details.price,
+        transactions.stock_details.discount,
+        transactions.stock_details.sales_tax_id,
+        transactions.stock_details.tax
+FROM transactions.stock_details
+INNER JOIN transactions.stock_master
+ON transactions.stock_master.stock_master_id = transactions.stock_details.stock_master_id
+INNER JOIN transactions.transaction_master
+ON transactions.transaction_master.transaction_master_id = transactions.stock_master.transaction_master_id
+INNER JOIN core.parties
+ON transactions.stock_master.party_id = core.parties.party_id
+GO
+
+
+
+
+CREATE VIEW transactions.verified_stock_transaction_view
+AS
+SELECT * FROM transactions.stock_transaction_view
+WHERE verification_status_id > 0
+GO
+
+
+
+CREATE VIEW transactions.sales_by_country_view
+AS
+WITH country_data
+AS
+(
+SELECT country_id, SUM((price * quantity) - discount + tax + shipping_charge) AS sales
+FROM transactions.verified_stock_transaction_view
+WHERE book in ('Sales.Delivery', 'Sales.Direct')
+GROUP BY country_id
+)
+SELECT country_code, sales 
+FROM country_data INNER JOIN core.countries
+ON country_data.country_id = core.countries.country_id
+GO
+
+CREATE FUNCTION office.get_office_code_by_id(@office_id int)
+RETURNS varchar(12)
+AS
+
+BEGIN
+    RETURN
+    (
+        SELECT office.offices.office_code FROM office.offices
+        WHERE office.offices.office_id=@office_id
+    )
+END
+GO
+
+CREATE FUNCTION office.get_office_ids(@root_office_id integer)
+RETURNS @rettable TABLE
+( 
+	office_id integer
+)
+AS
+
+BEGIN
+        WITH  office_cte(office_id, path) AS (
+         SELECT
+            tn.office_id,  CAST(tn.office_id AS varchar(500)) AS path
+            FROM office.offices AS tn WHERE tn.office_id = @root_office_id
+        UNION ALL
+         SELECT
+            c.office_id, CAST(p.path + '->' + CAST(c.office_id AS varchar(50)) AS varchar(500))
+            FROM office_cte AS p, office.offices AS c WHERE parent_office_id = p.office_id
+        )
+        INSERT INTO @rettable SELECT office_id FROM office_cte
+		RETURN
+END
+GO
+
+CREATE FUNCTION transactions.get_sales_by_office(@office_id integer, @divide_by integer)
+RETURNS @rettable TABLE
+(
+  office varchar(500),
+  jan numeric,
+  feb numeric,
+  mar numeric,
+  apr numeric,
+  may numeric,
+  jun numeric,
+  jul numeric,
+  aug numeric,
+  sep numeric,
+  oct numeric,
+  nov numeric,
+  [dec] numeric
+)
+AS
+
+BEGIN
+        IF @divide_by <= 0 
+                SET @divide_by = 1
+      
+
+		INSERT INTO  @rettable(office,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,[dec])   
+		   
+				SELECT * FROM
+                (
+				SELECT 
+                office.get_office_code_by_id(office_id) AS office,
+                datepart(month, value_date) AS month_id,
+                SUM((price * quantity) - discount + tax)/@divide_by AS total
+                FROM transactions.verified_stock_transaction_view
+                WHERE book IN ('Sales.Direct', 'Sales.Delivery')
+                AND office_id IN (SELECT * FROM office.get_office_ids(@office_id))
+                GROUP BY office_id,datepart(month, value_date)
+				) a
+                CROSS JOIN
+                (select m from generate_series(1,12)) b
+		RETURN
+ 
+
+END
+GO
+
+CREATE FUNCTION transactions.get_sales_by_offices(@divide_by integer)
+RETURNS @rettable TABLE
+(
+  office varchar(500),
+  jan numeric,
+  feb numeric,
+  mar numeric,
+  apr numeric,
+  may numeric,
+  jun numeric,
+  jul numeric,
+  aug numeric,
+  sep numeric,
+  oct numeric,
+  nov numeric,
+  [dec] numeric
+)
+AS
+
+    
+BEGIN
+	DECLARE @root_office_id integer
+	SET @root_office_id = 0
+    SELECT TOP 1 @root_office_id = office.offices.office_id
+    FROM office.offices
+    WHERE parent_office_id IS NULL
+    
+
+    IF @divide_by <= 0 
+       SET @divide_by = 1
+        
+	INSERT INTO @rettable
+       
+    SELECT * FROM transactions.get_sales_by_office(@root_office_id, @divide_by)
+	RETURN
+END
 GO
 
 

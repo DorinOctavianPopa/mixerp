@@ -5,6 +5,7 @@ using Npgsql;
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace MixERP.Net.WebControls.Common.Data
 {
@@ -34,6 +35,7 @@ namespace MixERP.Net.WebControls.Common.Data
             Collection<FrequencyDates> applicationDates = new Collection<FrequencyDates>();
 
             const string sql = "SELECT office_id AS office_id, core.get_date(office_id) AS today, core.get_month_start_date(office_id) AS month_start_date,core.get_month_end_date(office_id) AS month_end_date, core.get_quarter_start_date(office_id) AS quarter_start_date, core.get_quarter_end_date(office_id) AS quarter_end_date, core.get_fiscal_half_start_date(office_id) AS fiscal_half_start_date, core.get_fiscal_half_end_date(office_id) AS fiscal_half_end_date, core.get_fiscal_year_start_date(office_id) AS fiscal_year_start_date, core.get_fiscal_year_end_date(office_id) AS fiscal_year_end_date FROM office.offices;";
+
             using (NpgsqlCommand command = new NpgsqlCommand(sql))
             {
                 using (DataTable table = DbOperation.GetDataTable(catalog, command))
@@ -51,7 +53,30 @@ namespace MixERP.Net.WebControls.Common.Data
             return applicationDates;
         }
 
-        public static DateTime GetDate(string catalog, int officeId)
+		public static Collection<FrequencyDates> MicrosoftSQLGetFrequencyDates(string catalog)
+		{
+			Collection<FrequencyDates> applicationDates = new Collection<FrequencyDates>();
+
+			const string sql = "SELECT office_id AS office_id, core.get_date(office_id) AS today, core.get_month_start_date(office_id) AS month_start_date,core.get_month_end_date(office_id) AS month_end_date, core.get_quarter_start_date(office_id) AS quarter_start_date, core.get_quarter_end_date(office_id) AS quarter_end_date, core.get_fiscal_half_start_date(office_id) AS fiscal_half_start_date, core.get_fiscal_half_end_date(office_id) AS fiscal_half_end_date, core.get_fiscal_year_start_date(office_id) AS fiscal_year_start_date, core.get_fiscal_year_end_date(office_id) AS fiscal_year_end_date FROM office.offices;";
+
+			using (SqlCommand command = new SqlCommand(sql))
+			{
+				using (DataTable table = DbOperation.GetDataTable(catalog, command))
+				{
+					if (table != null && table.Rows != null && table.Rows.Count > 0)
+					{
+						foreach (DataRow row in table.Rows)
+						{
+							applicationDates.Add(GetApplicationDateModel(row));
+						}
+					}
+				}
+			}
+
+			return applicationDates;
+		}
+
+		public static DateTime GetDate(string catalog, int officeId)
         {
             const string sql = "SELECT core.get_date(@OfficeId::integer);";
             using (NpgsqlCommand command = new NpgsqlCommand(sql))

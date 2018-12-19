@@ -6,14 +6,18 @@ namespace MixERP.Net.WebControls.Common.Helpers
 {
     public static class DatePersister
     {
-        public static FrequencyDates GetFrequencyDates(string catalog, int officeId)
+		public const string ProviderName = "SqlClient";
+		public static FrequencyDates GetFrequencyDates(string catalog, int officeId)
         {
             Collection<FrequencyDates> applicationDates = Dates.GetFrequencyDates(catalog);
             bool persist = false;
 
             if (applicationDates == null || applicationDates.Count.Equals(0))
             {
-                applicationDates = Data.Frequency.GetFrequencyDates(catalog);
+					if(ProviderName== "SqlClient")
+						applicationDates = Data.Frequency.MicrosoftSQLGetFrequencyDates(catalog);
+					else
+						applicationDates = Data.Frequency.GetFrequencyDates(catalog);
                 persist = true;
             }
             else
