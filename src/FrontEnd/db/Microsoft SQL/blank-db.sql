@@ -19362,7 +19362,34 @@ BEGIN
 END
 GO
 
-CREATE FUNCTION transactions.get_sales_by_office(@office_id integer, @divide_by integer)
+
+--20.12.2018
+
+CREATE FUNCTION dbo.generate_series
+(
+	-- Add the parameters for the function here
+	@from integer, 
+	@to integer
+)
+RETURNS 
+@rettable TABLE 
+(
+	value integer
+)
+AS
+BEGIN
+	DECLARE @i integer
+	SET @i=@from
+	WHILE @i<=@to BEGIN
+		INSERT INTO @rettable(value) VALUES(@i)
+		SET @i= @i+1
+	END
+
+	RETURN 
+END
+GO
+
+CREATE FUNCTION [transactions].[get_sales_by_office](@office_id integer, @divide_by integer)
 RETURNS @rettable TABLE
 (
   office varchar(500),
@@ -19388,7 +19415,21 @@ BEGIN
 
 		INSERT INTO  @rettable(office,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,[dec])   
 		   
-				SELECT * FROM
+				SELECT 
+					office,				
+					SUM(case wHEN month_id=1 then total end) jan,
+					SUM(case wHEN month_id=2 then total end) feb,
+					SUM(case wHEN month_id=3 then total end) mar,
+					SUM(case wHEN month_id=4 then total end) apr,
+					SUM(case wHEN month_id=5 then total end) may,
+					SUM(case wHEN month_id=6 then total end) jun,
+					SUM(case wHEN month_id=7 then total end) jul,
+					SUM(case wHEN month_id=8 then total end) aug,
+					SUM(case wHEN month_id=9 then total end) sep,
+					SUM(case wHEN month_id=10 then total end) oct,
+					SUM(case wHEN month_id=11 then total end) nov,
+					SUM(case wHEN month_id=12 then total end) [dec]
+				FROM
                 (
 				SELECT 
                 office.get_office_code_by_id(office_id) AS office,
@@ -19400,7 +19441,8 @@ BEGIN
                 GROUP BY office_id,datepart(month, value_date)
 				) a
                 CROSS JOIN
-                (select m from generate_series(1,12)) b
+                (select value from generate_series(1,12)) b
+				GROUP BY office
 		RETURN
  
 
@@ -19445,8 +19487,696 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE audit.get_office_information_model(@user_id integer)
+AS
+BEGIN
+    CREATE TABLE #temp_model
+    (
+        office              varchar(500),
+        logged_in_to        varchar(500),
+        last_login_ip       varchar(100),
+        last_login_on       datetime,
+        current_ip          varchar(100),
+        current_login_on    datetime,
+        role                varchar(500),
+        department          varchar(500)
+    )
+
+
+    INSERT INTO #temp_model(office, role, department)
+    SELECT 
+        office.offices.office_code + ' (' + office.offices.office_name + ')',
+        office.roles.role_code + ' (' + office.roles.role_name + ')',
+        office.departments.department_code + ' (' + office.departments.department_name
+    FROM office.users
+    INNER JOIN office.offices
+    ON office.users.office_id = office.users.office_id
+    INNER JOIN office.roles
+    ON office.users.role_id = office.roles.role_id
+    INNER JOIN office.departments
+    ON office.users.department_id = office.departments.department_id
+    WHERE office.users.user_id = @user_id;
+
+    WITH login_info
+    AS
+    (
+        SELECT 
+            office.offices.office_code + ' (' + office.offices.office_name + ')' AS logged_in_to,
+            ip_address AS current_ip,
+            login_date_time AS current_login_on
+        FROM audit.logins
+        INNER JOIN office.offices
+        ON audit.logins.office_id = office.offices.office_id
+        WHERE user_id = @user_id
+        AND login_date_time = 
+        (
+            SELECT max(login_date_time)
+            FROM audit.logins
+            WHERE user_id = @user_id
+        )
+    )
+    UPDATE #temp_model
+    SET 
+        logged_in_to        = login_info.logged_in_to,
+        current_ip          = login_info.current_ip,
+        current_login_on    = login_info.current_login_on
+    FROM login_info;
+
+
+    WITH last_login_info
+    AS
+    (
+        SELECT TOP 1
+            ip_address          AS last_login_ip,
+            login_date_time     AS last_login_on
+        FROM audit.logins
+        WHERE user_id = @user_id
+        AND login_date_time < 
+        (
+            SELECT max(login_date_time)
+            FROM audit.logins
+            WHERE user_id = @user_id
+        )
+        ORDER BY login_date_time DESC
+
+    )
+    UPDATE #temp_model
+    SET 
+        last_login_ip       = last_login_info.last_login_ip,
+        last_login_on       = last_login_info.last_login_on
+    FROM last_login_info;
+    
+    
+    SELECT * FROM #temp_model
+END
+GO
+
+CREATE FUNCTION core.get_workflow_model()
+RETURNS @rettable TABLE
+(
+    flagged_transactions        integer,
+    in_verification_stack       integer,
+    auto_approved               integer,
+    approved                    integer,
+    rejected                    integer,
+    closed                      integer,
+    withdrawn                   integer
+)
+AS
+BEGIN
+    DECLARE @flagged            integer;
+    DECLARE @in_verification    integer;
+    DECLARE @auto_approved      integer;
+    DECLARE @approved           integer;
+    DECLARE @rejected           integer;
+    DECLARE @closed             integer;
+    DECLARE @withdrawn          integer;
+
+    SELECT @flagged  = COUNT(*)
+    FROM core.flags;
+
+    SELECT @in_verification = COUNT(*)
+    FROM transactions.transaction_master
+    WHERE verification_status_id = 0;
+
+    SELECT @auto_approved = COUNT(*)
+    FROM transactions.transaction_master
+    WHERE verification_status_id = 1;
+
+    SELECT @approved = COUNT(*)
+    FROM transactions.transaction_master
+    WHERE verification_status_id = 2;
+
+    SELECT @rejected = COUNT(*)
+    FROM transactions.transaction_master
+    WHERE verification_status_id = -3;
+
+    SELECT @closed = COUNT(*)
+    FROM transactions.transaction_master
+    WHERE verification_status_id = -2;
+
+    SELECT @withdrawn = COUNT(*) 
+    FROM transactions.transaction_master
+    WHERE verification_status_id = -1;
+
+    
+    INSERT INTO @rettable SELECT
+        @flagged, 
+        @in_verification, 
+        @auto_approved,
+        @approved,
+        @rejected,
+        @closed,
+        @withdrawn
+
+	RETURN
+END
+GO
+
+CREATE PROCEDURE transactions.get_top_selling_products_of_all_time(@top int)
+AS
+
+BEGIN
+        CREATE  TABLE #top_selling_products_of_all_time
+        (
+                id              integer ,
+                item_id         integer,
+                item_code       varchar(12),
+                item_name       varchar(150),
+                total_sales     numeric
+        )
+
+        INSERT INTO #top_selling_products_of_all_time(id, item_id, total_sales)
+        SELECT ROW_NUMBER() OVER(ORDER BY top_selling_products_of_all_time DESC), * 
+        FROM
+        (
+                SELECT TOP(@top)         
+                        transactions.verified_stock_transaction_view.item_id, 
+                        SUM((price * quantity) - discount + tax) AS top_selling_products_of_all_time
+                FROM transactions.verified_stock_transaction_view
+                WHERE left(book, 5) = 'Sales'
+                GROUP BY transactions.verified_stock_transaction_view.item_id
+        ) t
+
+        UPDATE #top_selling_products_of_all_time
+        SET 
+                item_code = core.items.item_code,
+                item_name = core.items.item_name
+        FROM core.items
+        WHERE #top_selling_products_of_all_time.item_id = core.items.item_id;
+        
+
+        SELECT * FROM #top_selling_products_of_all_time;
+END
+
+CREATE PROCEDURE transactions.get_top_selling_products_by_office(@office_id integer, @top integer)
+AS
+BEGIN
+        CREATE TABLE #top_selling_products
+        (
+               id              integer ,
+                item_id         integer,
+                item_code       varchar(12),
+                item_name       varchar(150),
+                total_sales     numeric
+        );
+
+        INSERT INTO #top_selling_products
+        EXEC transactions.get_top_selling_products_of_all_time @top
+
+
+        CREATE TABLE #top_selling_products_by_office
+        (
+                id              integer IDENTITY(1,1),
+                office_id       integer,
+                office_code     varchar(12),
+                office_name     varchar(15),
+                item_id         integer,
+                item_code       varchar(12),
+                item_name       varchar(150),
+                total_sales     numeric
+        )
+
+
+        INSERT INTO #top_selling_products_by_office(office_id, item_id, total_sales)
+        SELECT
+                transactions.verified_stock_transaction_view.office_id,
+                transactions.verified_stock_transaction_view.item_id, 
+                SUM((price * quantity) - discount + tax) AS sales_amount
+        FROM transactions.verified_stock_transaction_view
+        WHERE transactions.verified_stock_transaction_view.item_id IN (SELECT item_id FROM #top_selling_products)
+        AND transactions.verified_stock_transaction_view.office_id IN (SELECT * FROM office.get_office_ids(@office_id))
+        GROUP BY 
+                transactions.verified_stock_transaction_view.office_id, 
+                transactions.verified_stock_transaction_view.item_id
+        ORDER BY sales_amount DESC, item_id ASC;
+
+
+        UPDATE #top_selling_products_by_office 
+        SET 
+                item_code = core.items.item_code,
+                item_name = core.items.item_name
+        FROM core.items
+        WHERE #top_selling_products_by_office .item_id = core.items.item_id;
+
+
+        UPDATE #top_selling_products_by_office 
+        SET 
+                office_code = office.offices.office_code,
+                office_name= office.offices.office_name
+        FROM office.offices
+        WHERE #top_selling_products_by_office .office_id = office.offices.office_id;
+
+        SELECT * FROM #top_selling_products_by_office;
+END
+GO
+
+CREATE PROCEDURE transactions.get_parent_top_selling_products_by_office
+AS
+BEGIN
+	DECLARE @root_office_id integer
+	SET @root_office_id = 0
+    SELECT TOP 1 @root_office_id = office.offices.office_id
+    FROM office.offices
+    WHERE parent_office_id IS NULL
+
+     EXEC transactions.get_top_selling_products_by_office @root_office_id,5
+END
+GO
+
+CREATE PROCEDURE transactions.get_parent_top_selling_products_of_all_time
+AS
+BEGIN
+        EXEC transactions.get_top_selling_products_of_all_time 5
+END
+GO
+
+CREATE FUNCTION core.get_menu_id(@menu_code varchar(12))
+RETURNS INTEGER
+AS
+BEGIN
+    RETURN
+    (
+        SELECT core.menus.menu_id
+        FROM core.menus
+        WHERE core.menus.menu_code=@menu_code
+    )
+END
+
+INSERT INTO core.menus(menu_text, url, menu_code, level)
+SELECT 'Sales', '~/Modules/Sales/Index.mix', 'SA', 0 UNION ALL
+SELECT 'Purchase', '~/Modules/Purchase/Index.mix', 'PU', 0 UNION ALL
+SELECT 'Products & Items', '~/Modules/Inventory/Index.mix', 'ITM', 0 UNION ALL
+SELECT 'Finance', '~/Modules/Finance/Index.mix', 'FI', 0 UNION ALL
+SELECT 'Back Office', '~/Modules/BackOffice/Index.mix', 'BO', 0
+GO
+
+
+INSERT INTO core.menus(menu_text, url, menu_code, level, parent_menu_id)
+          SELECT 'Sales & Quotation', NULL, 'SAQ', 1, core.get_menu_id('SA')
+UNION ALL SELECT 'Direct Sales', '~/Modules/Sales/DirectSales.mix', 'DRS', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Sales Quotation', '~/Modules/Sales/Quotation.mix', 'SQ', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Sales Order', '~/Modules/Sales/Order.mix', 'SO', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Sales Delivery', '~/Modules/Sales/Delivery.mix', 'SD', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Receipt from Customer', '~/Modules/Sales/Receipt.mix', 'RFC', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Sales Return', '~/Modules/Sales/Return.mix', 'SR', 2, core.get_menu_id('SAQ')
+UNION ALL SELECT 'Setup & Maintenance', NULL, 'SSM', 1, core.get_menu_id('SA')
+UNION ALL SELECT 'Bonus Slab for Salespersons', '~/Modules/Sales/Setup/BonusSlabs.mix', 'ABS', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Bonus Slab Details', '~/Modules/Sales/Setup/BonusSlabDetails.mix', 'BSD', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Sales Teams', '~/Modules/Sales/Setup/Teams.mix', 'SST', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Salespersons', '~/Modules/Sales/Setup/Salespersons.mix', 'SSA', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Bonus Slab Assignment', '~/Modules/Sales/Setup/BonusSlabAssignment.mix', 'BSA', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Late Fees', '~/Modules/Sales/Setup/LateFees.mix', 'LF', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Payment Terms', '~/Modules/Sales/Setup/PaymentTerms.mix', 'PAT', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Recurring Invoices', '~/Modules/Sales/Setup/RecurringInvoices.mix', 'RI', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Recurring Invoice Setup', '~/Modules/Sales/Setup/RecurringInvoiceSetup.mix', 'RIS', 2, core.get_menu_id('SSM')
+UNION ALL SELECT 'Sales Reports', NULL, 'SAR', 1, core.get_menu_id('SA')
+UNION ALL SELECT 'Top Selling Items', '~/Modules/Sales/Reports/TopSellingItems.mix', 'SAR-TSI', 2, core.get_menu_id('SAR')
+UNION ALL SELECT 'Purchase & Quotation', NULL, 'PUQ', 1, core.get_menu_id('PU')
+UNION ALL SELECT 'Direct Purchase', '~/Modules/Purchase/DirectPurchase.mix', 'DRP', 2, core.get_menu_id('PUQ')
+UNION ALL SELECT 'Purchase Order', '~/Modules/Purchase/Order.mix', 'PO', 2, core.get_menu_id('PUQ')
+UNION ALL SELECT 'Purchase Reorder', '~/Modules/Purchase/Reorder.mix', 'PRO', 2, core.get_menu_id('PUQ')
+UNION ALL SELECT 'GRN Entry', '~/Modules/Purchase/GRN.mix', 'GRN', 2, core.get_menu_id('PUQ')
+UNION ALL SELECT 'Purchase Return', '~/Modules/Purchase/Return.mix', 'PR', 2, core.get_menu_id('PUQ')
+UNION ALL SELECT 'Purchase Reports', NULL, 'PUR', 1, core.get_menu_id('PU')
+UNION ALL SELECT 'Inventory Movements', NULL, 'IIM', 1, core.get_menu_id('ITM')
+UNION ALL SELECT 'Stock Transfer Journal', '~/Modules/Inventory/Transfer.mix', 'STJ', 2, core.get_menu_id('IIM')
+UNION ALL SELECT 'Stock Adjustments', '~/Modules/Inventory/Adjustment.mix', 'STA', 2, core.get_menu_id('IIM')
+UNION ALL SELECT 'Setup & Maintenance', NULL, 'ISM', 1, core.get_menu_id('ITM')
+UNION ALL SELECT 'Store Types', '~/Modules/Inventory/Setup/StoreTypes.mix', 'STT', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Stores', '~/Modules/Inventory/Setup/Stores.mix', 'STO', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Counter Setup', '~/Modules/BackOffice/Counters.mix', 'SCS', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Party Types', '~/Modules/Inventory/Setup/PartyTypes.mix', 'PT', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Party Accounts', '~/Modules/Inventory/Setup/Parties.mix', 'PA', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Shipping Addresses', '~/Modules/Inventory/Setup/ShippingAddresses.mix', 'PSA', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Item Maintenance', '~/Modules/Inventory/Setup/Items.mix', 'SSI', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Compound Items', '~/Modules/Inventory/Setup/CompoundItems.mix', 'SSC', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Compound Item Details', '~/Modules/Inventory/Setup/CompoundItemDetails.mix', 'SSCD', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Cost Prices', '~/Modules/Inventory/Setup/CostPrices.mix', 'ICP', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Selling Prices', '~/Modules/Inventory/Setup/SellingPrices.mix', 'ISP', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Item Groups', '~/Modules/Inventory/Setup/ItemGroups.mix', 'SIG', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Item Types', '~/Modules/Inventory/Setup/ItemTypes.mix', 'SIT', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Brands', '~/Modules/Inventory/Setup/Brands.mix', 'SSB', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Units of Measure', '~/Modules/Inventory/Setup/UOM.mix', 'UOM', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Compound Units of Measure', '~/Modules/Inventory/Setup/CUOM.mix', 'CUOM', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Shipper Information', '~/Modules/Inventory/Setup/Shippers.mix', 'SHI', 2, core.get_menu_id('ISM')
+UNION ALL SELECT 'Reports', NULL, 'IR', 1, core.get_menu_id('ITM')
+UNION ALL SELECT 'Inventory Account Statement', '~/Modules/Inventory/Reports/AccountStatement.mix', 'IAS', 2, core.get_menu_id('IR')
+UNION ALL SELECT 'Transactions & Templates', NULL, 'FTT', 1, core.get_menu_id('FI')
+UNION ALL SELECT 'Journal Voucher Entry', '~/Modules/Finance/JournalVoucher.mix', 'JVN', 2, core.get_menu_id('FTT')
+UNION ALL SELECT 'Update Exchange Rates', '~/Modules/Finance/UpdateExchangeRates.mix', 'UER', 2, core.get_menu_id('FTT')
+UNION ALL SELECT 'Voucher Verification', '~/Modules/Finance/VoucherVerification.mix', 'FVV', 2, core.get_menu_id('FTT')
+UNION ALL SELECT 'End of Day Operation', '~/Modules/Finance/EODOperation.mix', 'EOD', 2, core.get_menu_id('FTT')
+UNION ALL SELECT 'Setup & Maintenance', NULL, 'FSM', 1, core.get_menu_id('FI')
+UNION ALL SELECT 'Chart of Accounts', '~/Modules/Finance/Setup/COA.mix', 'COA', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Currency Management', '~/Modules/Finance/Setup/Currencies.mix', 'CUR', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Bank Accounts', '~/Modules/Finance/Setup/BankAccounts.mix', 'CBA', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Ageing Slabs', '~/Modules/Finance/Setup/AgeingSlabs.mix', 'AGS', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Cash Flow Headings', '~/Modules/Finance/Setup/CashFlowHeadings.mix', 'CFH', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Cash Flow Setup', '~/Modules/Finance/Setup/CashFlowSetup.mix', 'CFS', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Cost Centers', '~/Modules/Finance/Setup/CostCenters.mix', 'CC', 2, core.get_menu_id('FSM')
+UNION ALL SELECT 'Reports', NULL, 'FIR', 1, core.get_menu_id('FI')
+UNION ALL SELECT 'Account Statement', '~/Modules/Finance/Reports/AccountStatement.mix', 'AS', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Trial Balance', '~/Modules/Finance/Reports/TrialBalance.mix', 'TB', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Profit & Loss Account', '~/Modules/Finance/Reports/ProfitAndLossAccount.mix', 'PLA', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Retained Earnings Statement', '~/Modules/Finance/Reports/RetainedEarnings.mix', 'RET', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Balance Sheet', '~/Modules/Finance/Reports/BalanceSheet.mix', 'BS', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Cash Flow', '~/Modules/Finance/Reports/CashFlow.mix', 'CF', 2, core.get_menu_id('FIR')
+UNION ALL SELECT 'Tax Configuration', NULL, 'BOTC', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Tax Master', '~/Modules/BackOffice/Tax/TaxMaster.mix', 'TXM', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Tax Authorities', '~/Modules/BackOffice/Tax/TaxAuthorities.mix', 'TXA', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Sales Tax Types', '~/Modules/BackOffice/Tax/SalesTaxTypes.mix', 'STXT', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'State Sales Taxes', '~/Modules/BackOffice/Tax/StateSalesTaxes.mix', 'STST', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Counties Sales Taxes', '~/Modules/BackOffice/Tax/CountySalesTaxes.mix', 'CTST', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Sales Taxes', '~/Modules/BackOffice/Tax/SalesTaxes.mix', 'STX', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Sales Tax Details', '~/Modules/BackOffice/Tax/SalesTaxDetails.mix', 'STXD', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Tax Exempt Types', '~/Modules/BackOffice/Tax/TaxExemptTypes.mix', 'TXEXT', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Sales Tax Exempts', '~/Modules/BackOffice/Tax/SalesTaxExempts.mix', 'STXEX', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Sales Tax Exempt Details', '~/Modules/BackOffice/Tax/SalesTaxExemptDetails.mix', 'STXEXD', 2, core.get_menu_id('BOTC')
+UNION ALL SELECT 'Miscellaneous Parameters', NULL, 'SMP', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Flags', '~/Modules/BackOffice/Flags.mix', 'TRF', 2, core.get_menu_id('SMP')
+UNION ALL SELECT 'Audit Reports', NULL, 'SEAR', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Login View', '~/Reports/Office.Login.xml', 'SEAR-LV', 2, core.get_menu_id('SEAR')
+UNION ALL SELECT 'Office Setup', NULL, 'SOS', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Office & Branch Setup', '~/Modules/BackOffice/Offices.mix', 'SOB', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Cash Repository Setup', '~/Modules/BackOffice/CashRepositories.mix', 'SCR', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Department Setup', '~/Modules/BackOffice/Departments.mix', 'SDS', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Role Management', '~/Modules/BackOffice/Roles.mix', 'SRM', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'User Management', '~/Modules/BackOffice/Users.mix', 'SUM', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Entity Setup', '~/Modules/BackOffice/Entities.mix', 'SES', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Industry Setup', '~/Modules/BackOffice/Industries.mix', 'SIS', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Country Setup', '~/Modules/BackOffice/Countries.mix', 'SCRS', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'State Setup', '~/Modules/BackOffice/States.mix', 'SSS', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'County Setup', '~/Modules/BackOffice/Counties.mix', 'SCTS', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Fiscal Year Information', '~/Modules/BackOffice/FiscalYear.mix', 'SFY', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Frequency & Fiscal Year Management', '~/Modules/BackOffice/Frequency.mix', 'SFR', 2, core.get_menu_id('SOS')
+UNION ALL SELECT 'Policy Management', NULL, 'SPM', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Voucher Verification Policy', '~/Modules/BackOffice/Policy/VoucherVerification.mix', 'SVV', 2, core.get_menu_id('SPM')
+UNION ALL SELECT 'Automatic Verification Policy', '~/Modules/BackOffice/Policy/AutoVerification.mix', 'SAV', 2, core.get_menu_id('SPM')
+UNION ALL SELECT 'Menu Access Policy', '~/Modules/BackOffice/Policy/MenuAccess.mix', 'SMA', 2, core.get_menu_id('SPM')
+UNION ALL SELECT 'GL Access Policy', '~/Modules/BackOffice/Policy/GLAccess.mix', 'SAP', 2, core.get_menu_id('SPM')
+UNION ALL SELECT 'Store Policy', '~/Modules/BackOffice/Policy/Store.mix', 'SSP', 2, core.get_menu_id('SPM')
+UNION ALL SELECT 'Admin Tools', NULL, 'SAT', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Database Statistics', '~/Modules/BackOffice/Admin/DatabaseStatistics.mix', 'DBSTAT', 2, core.get_menu_id('SAT')
+UNION ALL SELECT 'Backup Database', '~/Modules/BackOffice/Admin/DatabaseBackup.mix', 'BAK', 2, core.get_menu_id('SAT')
+UNION ALL SELECT 'Change User Password', '~/Modules/BackOffice/Admin/ChangePassword.mix', 'PWD', 2, core.get_menu_id('SAT')
+UNION ALL SELECT 'Check Updates', '~/Modules/BackOffice/Admin/CheckUpdates.mix', 'UPD', 2, core.get_menu_id('SAT')
+UNION ALL SELECT 'Translate MixERP', '~/Modules/BackOffice/Admin/LocalizeMixERP.mix', 'TRA', 2, core.get_menu_id('SAT')
+UNION ALL SELECT 'One Time Setup', NULL, 'OTS', 1, core.get_menu_id('BO')
+UNION ALL SELECT 'Opening Inventory', '~/Modules/BackOffice/OTS/OpeningInventory.mix', 'OTSI', 2, core.get_menu_id('OTS')
+GO
+
+ALTER TABLE core.menus
+ADD sort integer NOT NULL DEFAULT(0);
+
+ALTER TABLE core.menus
+ADD icon varchar(48) NOT NULL DEFAULT('')
+GO
+
+
+UPDATE core.menus SET menu_text = 'Inventory' WHERE menu_code = 'ITM';
+UPDATE core.menus SET sort = 100 WHERE menu_code = 'ITM';
+UPDATE core.menus SET sort = 200 WHERE menu_code = 'SA';
+UPDATE core.menus SET sort = 300 WHERE menu_code = 'PU';
+UPDATE core.menus SET sort = 400 WHERE menu_code = 'FI';
+UPDATE core.menus SET sort = 500 WHERE menu_code = 'BO';
+UPDATE core.menus SET sort = 10000 WHERE menu_code = 'SET';
+
+
+UPDATE core.menus SET sort= 2000, icon = 'line chart' WHERE menu_code = 'ITM';
+UPDATE core.menus SET sort= 3000, icon = 'shop' WHERE menu_code = 'SA';
+UPDATE core.menus SET sort= 4000, icon = 'payment' WHERE menu_code = 'PU';
+UPDATE core.menus SET sort= 5000, icon = 'area chart' WHERE menu_code = 'FI';
+UPDATE core.menus SET sort= 6000, icon = 'building' WHERE menu_code = 'BO';
+UPDATE core.menus SET sort= 7000, icon = 'settings' WHERE menu_code IN('SET', 'SSM', 'ISM', 'FSM');
+
+UPDATE core.menus SET sort = 0, icon = 'bar chart' WHERE parent_menu_id IN 
+(
+    SELECT menu_id 
+    FROM core.menus
+    WHERE menu_code IN 
+    ('SAR', 'PUR', 'SPR', 'IR', 'FIR', 'SEAR', 'RW')
+);
+
+
+UPDATE core.menus SET sort = 2, icon = 'shipping' WHERE menu_code ='IIM';
+UPDATE core.menus SET sort = 0, icon = 'shipping' WHERE menu_code ='STR';
+UPDATE core.menus SET sort = 1, icon = 'thumbs up' WHERE menu_code ='STP';
+UPDATE core.menus SET sort = 2, icon = 'rocket' WHERE menu_code ='STD';
+UPDATE core.menus SET sort = 3, icon = 'flipped rocket' WHERE menu_code ='STK';
+UPDATE core.menus SET sort = 4, icon = 'shipping' WHERE menu_code ='STJ';
+UPDATE core.menus SET sort = 5, icon = 'desktop' WHERE menu_code ='STA';
+
+CREATE FUNCTION policy.get_menu
+(
+    @user_id    integer, 
+    @office_id  integer, 
+    @culture_   varchar(12)
+)
+RETURNS @rettable TABLE
+(
+    menu_id         integer,
+    menu_text       varchar(250),
+    url             varchar(250),
+    menu_code       varchar(12),
+    sort            integer,
+    icon            varchar(48),
+    level           smallint,
+    parent_menu_id  integer
+)
+AS
+    
+BEGIN    
+	DECLARE @culture_exists bit
+	SET @culture_exists = 0
+    IF EXISTS(SELECT * FROM core.menu_locale WHERE culture=@culture_)
+        SET @culture_exists = 1
+    
+
+    IF(@culture_exists = 0) 
+        IF EXISTS(SELECT * FROM core.menu_locale WHERE culture=SUBSTRING(@culture_,1, 2)) BEGIN
+            SET @culture_= SUBSTRING(@culture_,1, 2);
+            SET @culture_exists = 1
+        END
+    
+
+    IF @culture_exists=1 
+        INSERT INTO @rettable
+		SELECT
+            core.menus.menu_id,
+            CASE 
+                WHEN core.menu_locale.menu_text IS NOT NULL THEN core.menu_locale.menu_text
+                ELSE core.menus.menu_text
+            END AS menu_text,
+            core.menus.url,
+            core.menus.menu_code,
+            core.menus.sort,
+            core.menus.icon,
+            core.menus.level,
+            core.menus.parent_menu_id   
+        FROM core.menus        
+        LEFT JOIN core.menu_locale
+        ON core.menus.menu_id = core.menu_locale.menu_id
+        AND core.menu_locale.culture=@culture_
+        WHERE core.menus.menu_id IN
+        (
+            SELECT policy.menu_access.menu_id
+            FROM policy.menu_access
+            WHERE policy.menu_access.user_id=@user_id
+            AND policy.menu_access.office_id=@office_id           
+        )
+    ELSE
+        INSERT INTO @rettable
+		SELECT
+            core.menus.menu_id,
+            core.menus.menu_text,
+            core.menus.url,
+            core.menus.menu_code,
+            core.menus.sort,
+            core.menus.icon,
+            core.menus.level,
+            core.menus.parent_menu_id   
+        FROM core.menus
+        INNER JOIN policy.menu_access
+        ON core.menus.menu_id = policy.menu_access.menu_id
+        WHERE policy.menu_access.user_id=@user_id
+        AND policy.menu_access.office_id=@office_id
+    
+	RETURN
+
+END
+GO
+
+CREATE TABLE policy.default_entity_access
+(
+    default_entity_access_id        integer IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    entity_name                     varchar(128) NULL,
+	user_id                         integer NOT NULL REFERENCES office.users(user_id),
+    role_id                         integer NOT NULL REFERENCES office.roles(role_id),
+    access_type_id                  integer NULL REFERENCES policy.access_types(access_type_id),
+    allow_access                    bit NOT NULL,
+    audit_user_id                   integer NULL REFERENCES office.users(user_id),
+    audit_ts                        datetime NULL 
+                                    DEFAULT(GETDATE())
+)
+GO
+
+CREATE UNIQUE INDEX default_entity_access_entity_name_role_id_access_type_id_uix
+ON policy.default_entity_access(entity_name, role_id, access_type_id)
+GO
+
+CREATE FUNCTION policy.has_access(@user_id integer, @entity varchar(128), @access_type_id integer)
+RETURNS bit
+AS
+BEGIN
+    DECLARE @role_id                    integer;
+    DECLARE @group_policy               bit = NULL;
+    DECLARE @user_policy                bit = NULL;
+    DECLARE @policy                     bit = 1
+
+
+    SELECT @role_id = role_id  FROM office.users WHERE user_id = @user_id
+
+    --GROUP POLICY BASED ON ALL ENTITIES AND ALL ACCESS TYPES
+    IF EXISTS
+    (
+        SELECT * FROM policy.default_entity_access
+        WHERE role_id = @role_id
+        AND allow_access = 0
+        AND access_type_id IS NULL
+        AND COALESCE(entity_name, '') = ''
+    ) 
+        SET @group_policy = 1
+    
+
+    --GROUP POLICY BASED ON ALL ENTITIES AND SPECIFIED ACCESS TYPE
+    IF EXISTS
+    (
+        SELECT * FROM policy.default_entity_access
+        WHERE role_id = @role_id
+        AND allow_access = 0
+        AND access_type_id = @access_type_id
+        AND COALESCE(entity_name, '') = ''
+    ) 
+        SET @group_policy = 0
+
+ 
+
+    --GROUP POLICY BASED ON SPECIFIED ENTITY AND ALL ACCESS TYPES
+    IF EXISTS
+    (
+        SELECT * FROM policy.default_entity_access
+        WHERE role_id = @role_id
+        AND allow_access = 0
+        AND access_type_id IS NULL
+        AND entity_name = @entity
+    )
+        SET @group_policy = 0
+
+
+    --GROUP POLICY BASED ON SPECIFIED ENTITY AND SPECIFIED ACCESS TYPE
+    IF EXISTS
+    (
+        SELECT * FROM policy.default_entity_access
+        WHERE role_id = @role_id
+        AND allow_access = 0
+        AND access_type_id = @access_type_id
+        AND entity_name = @entity
+    ) 
+        SET @group_policy = 0
+    
+
+
+    --USER POLICY BASED ON ALL ENTITIES AND ALL ACCESS TYPES
+    SELECT @user_policy = allow_access  FROM policy.entity_access
+    WHERE [user_id] = @user_id
+    AND access_type_id IS NULL
+    AND COALESCE(entity_name, '') = '';
+
+    --USER POLICY BASED ON SPECIFIED ENTITY AND ALL ACCESS TYPES
+    IF(@user_policy IS NULL) 
+        SELECT @user_policy  = allow_access
+        FROM policy.entity_access
+        WHERE user_id = @user_id
+        AND access_type_id IS NULL
+        AND entity_name = @entity
+    
+ 
+    --USER POLICY BASED ON ALL ENTITIES AND SPECIFIED ACCESS TYPE
+    IF(@user_policy IS NULL) 
+        SELECT @user_policy = allow_access FROM policy.entity_access
+        WHERE user_id = @user_id
+        AND access_type_id = @access_type_id
+        AND COALESCE(entity_name, '') = '';
+    
+ 
+
+    --USER POLICY BASED ON SPECIFIED ENTITY AND SPECIFIED ACCESS TYPE
+    IF(@user_policy IS NULL) 
+        SELECT @user_policy =allow_access FROM policy.entity_access
+        WHERE user_id = @user_id
+        AND access_type_id = @access_type_id
+        AND entity_name = @entity
+    
+
+    IF(@group_policy IS NOT NULL) 
+        SET @policy = @group_policy
+    
+
+    IF(@user_policy IS NOT NULL)
+        SET @policy = @user_policy
+    
+
+    RETURN @policy
+END
+GO
+
+CREATE FUNCTION audit.get_user_id_by_login_id(@login_id bigint)
+RETURNS integer
+AS
+BEGIN
+    RETURN(
+	SELECT user_id
+    FROM audit.logins
+    WHERE login_id=@login_id
+	)
+END
+GO
+
+CREATE TABLE policy.entity_access
+(
+    entity_access_id                int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    entity_name                     varchar(128) NULL,
+    user_id                         integer NOT NULL REFERENCES office.users(user_id),
+    access_type_id                  integer NULL REFERENCES policy.access_types(access_type_id),
+    allow_access                    bit NOT NULL,
+    audit_user_id                   integer NULL REFERENCES office.users(user_id),
+    audit_ts                        datetime NULL 
+                                    DEFAULT(GETDATE())
+)
+GO
+
+
+CREATE UNIQUE INDEX default_entity_access_entity_namerole_id_access_type_id_uix
+ON policy.default_entity_access(entity_name, role_id, access_type_id)
+GO
+
+CREATE VIEW core.widget_setup_view
+AS
+SELECT
+    core.widget_setup.widget_setup_id,
+    core.widget_setup.widget_order,
+    core.widget_setup.widget_group_name,
+    core.widget_setup.widget_name,
+    core.widgets.widget_source
+FROM core.widget_setup
+INNER JOIN core.widgets
+ON core.widgets.widget_name = core.widget_setup.widget_name
+GO
+
 
 SET ANSI_PADDING OFF
 GO
+
 
 

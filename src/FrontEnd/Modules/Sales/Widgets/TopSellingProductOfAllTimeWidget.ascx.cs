@@ -12,7 +12,7 @@ namespace MixERP.Net.Core.Modules.Sales.Widgets
             this.TopSellingProductsLiteral.Text = Titles.TopSellingProductsOfAllTime;
 
             this.TopSellingProductsGridView.Attributes.Add("style", "display:none;");
-            this.TopSellingProductsGridView.DataSource = Data.Reports.TopSellingProducts.GetTopSellingProductsOfAllTimeByOffice(AppUsers.GetCurrentUserDB());
+            this.TopSellingProductsGridView.DataSource = Data.Reports.TopSellingProducts.MicrosoftSQLGetTopSellingProductsOfAllTimeByOffice(AppUsers.GetCurrentUserDB());
             this.TopSellingProductsGridView.DataBind();
         }
     }

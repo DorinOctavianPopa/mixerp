@@ -9,8 +9,10 @@ namespace MixERP.Net.Core.Modules.BackOffice.Data.Policy
         public static IEnumerable<DbGetMenuPolicyResult> GetMenuPolicy(string catalog, int userId, int officeId,
             string culture)
         {
-            const string sql = "SELECT * FROM policy.get_menu_policy(@0::integer, @1::integer, @2::text);";
-            return Factory.Get<DbGetMenuPolicyResult>(catalog, sql, userId, officeId, culture);
+            string sql = "SELECT * FROM policy.get_menu_policy(@0::integer, @1::integer, @2::text);";
+			if(Factory.ProviderName.ToLower().Contains("sqlclient"))
+				sql = "SELECT * FROM policy.get_menu_policy(@0, @1, @2);";
+			return Factory.Get<DbGetMenuPolicyResult>(catalog, sql, userId, officeId, culture);
         }
 
         public static void SaveMenuPolicy(string catalog, int userId, int officeId, string menus)

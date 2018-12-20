@@ -87,19 +87,14 @@ namespace MixERP.Net.Schemas.Policy.Data
                     throw new UnauthorizedException("Access is denied.");
                 }
             }
-            string query = "SELECT * FROM policy.get_menu(@UserId, @OfficeId, @Culture);";
+            string query = "SELECT * FROM policy.get_menu(@0::integer, @1::integer, @2::text);";
 
-            query = query.ReplaceWholeWord("@UserId", "@0::integer");
-            query = query.ReplaceWholeWord("@OfficeId", "@1::integer");
-            query = query.ReplaceWholeWord("@Culture", "@2::text");
+			if (Factory.ProviderName.ToLower().Contains("sqlclient"))
+			{
+				query = "SELECT * FROM policy.get_menu(@0, @1, @2);";
+			}
 
-
-            List<object> parameters = new List<object>();
-            parameters.Add(this.UserId);
-            parameters.Add(this.OfficeId);
-            parameters.Add(this.Culture);
-
-            return Factory.Get<DbGetMenuResult>(this._Catalog, query, parameters.ToArray());
+            return Factory.Get<DbGetMenuResult>(this._Catalog, query, this.UserId, this.OfficeId, this.Culture);
         }
 
 

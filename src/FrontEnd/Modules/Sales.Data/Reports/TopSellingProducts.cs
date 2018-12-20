@@ -2,6 +2,7 @@
 using MixERP.Net.DbFactory;
 using Npgsql;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace MixERP.Net.Core.Modules.Sales.Data.Reports
@@ -17,7 +18,17 @@ namespace MixERP.Net.Core.Modules.Sales.Data.Reports
             }
         }
 
-        public static DataTable GetTopSellingProductsOfAllTimeByOffice(string catalog)
+		public static DataTable MicrosoftSQLGetTopSellingProductsOfAllTime(string catalog)
+		{
+			const string sql = "transactions.get_parent_top_selling_products_of_all_time";
+			using (SqlCommand command = new SqlCommand(sql))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				return DbOperation.GetDataTable(catalog, command);
+			}
+		}
+
+		public static DataTable GetTopSellingProductsOfAllTimeByOffice(string catalog)
         {
             const string sql = "SELECT  id, office_code, item_name, total_sales FROM transactions.get_top_selling_products_by_office();";
             using (NpgsqlCommand command = new NpgsqlCommand(sql))
@@ -26,7 +37,17 @@ namespace MixERP.Net.Core.Modules.Sales.Data.Reports
             }
         }
 
-        private static DataTable GetPivotTable(DataTable dataTable)
+		public static DataTable MicrosoftSQLGetTopSellingProductsOfAllTimeByOffice(string catalog)
+		{
+			const string sql = "transactions.get_parent_top_selling_products_by_office";
+			using (SqlCommand command = new SqlCommand(sql))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				return GetPivotTable(DbOperation.GetDataTable(catalog, command));
+			}
+		}
+
+		private static DataTable GetPivotTable(DataTable dataTable)
         {
             if (dataTable == null)
             {
