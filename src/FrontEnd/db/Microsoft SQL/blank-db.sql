@@ -20174,6 +20174,76 @@ INNER JOIN core.widgets
 ON core.widgets.widget_name = core.widget_setup.widget_name
 GO
 
+CREATE FUNCTION office.is_admin(@user_id integer)
+RETURNS bit
+AS
+BEGIN
+    RETURN
+    (
+        SELECT office.roles.is_admin FROM office.users
+        INNER JOIN office.roles
+        ON office.users.role_id = office.roles.role_id
+        WHERE office.users.user_id=@user_id
+    )
+END
+GO
+
+CREATE TABLE policy.voucher_verification_policy
+(
+    policy_id                               int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    user_id                                 integer REFERENCES office.users(user_id),
+    can_verify_sales_transactions           bit NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_verify_sales_df 
+                                            DEFAULT(0),
+    sales_verification_limit                money NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_sales_verification_limit_df 
+                                            DEFAULT(0),
+    can_verify_purchase_transactions        bit NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_verify_purchase_df 
+                                            DEFAULT(0),
+    purchase_verification_limit             money NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_purchase_verification_limit_df 
+                                            DEFAULT(0),
+    can_verify_gl_transactions              bit NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_verify_gl_df 
+                                            DEFAULT(0),
+    gl_verification_limit                   money NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_gl_verification_limit_df 
+                                            DEFAULT(0),
+    can_self_verify                         bit NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_verify_self_df 
+                                            DEFAULT(0),
+    self_verification_limit                 money NOT NULL   
+                                            CONSTRAINT voucher_verification_policy_self_verification_limit_df 
+                                            DEFAULT(0),
+    effective_from                          datetime NOT NULL,
+    ends_on                                 datetime NOT NULL,
+    is_active                               bit NOT NULL,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())
+)
+GO
+
+INSERT INTO policy.menu_access(office_id, menu_id, user_id)
+SELECT office.offices.office_id, core.menus.menu_id, office.users.user_id
+FROM core.menus, office.offices, office.users
+WHERE office.users.user_name <> 'sys'
+AND core.menus.menu_id NOT IN
+(
+    SELECT menu_id
+    FROM policy.menu_access
+    WHERE office_id = office.offices.office_id
+    AND user_id = office.users.user_id
+)
+GO
+
+INSERT INTO config.mixerp
+SELECT 'MinimumLogLevel', 'Information', '' UNION ALL
+SELECT 'ApplicationLogDirectory', 'C:\mixerp-logs', 'Must be a physical path and application pool identity user must be able to write to it.' UNION ALL
+SELECT 'Mode', 'Development', ''
+GO
+
 
 SET ANSI_PADDING OFF
 GO

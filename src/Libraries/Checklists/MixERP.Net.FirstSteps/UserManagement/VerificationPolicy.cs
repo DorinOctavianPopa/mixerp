@@ -39,7 +39,7 @@ namespace MixERP.Net.FirstSteps.NewUser.UserManagment
             string catalog = AppUsers.GetCurrentUserDB();
             int officeId = AppUsers.GetCurrent().View.OfficeId.ToInt();
 
-            const string sql = @"SELECT COUNT(*)
+            string sql = @"SELECT COUNT(*)
                                 FROM office.users
                                 WHERE office.is_admin(user_id)
                                 AND user_id NOT IN
@@ -47,8 +47,19 @@ namespace MixERP.Net.FirstSteps.NewUser.UserManagment
                                     SELECT user_id FROM policy.voucher_verification_policy
                                     WHERE office_id = @0
                                 );";
+			if(Factory.ProviderName.ToLower().Contains("sqlclient"))
+			{
+				sql = @"SELECT COUNT(*)
+                                FROM office.users
+                                WHERE office.is_admin(user_id)=1
+                                AND user_id NOT IN
+                                (
+                                    SELECT user_id FROM policy.voucher_verification_policy
+                                    WHERE office_id = @0
+                                );";
 
-            return Factory.Scalar<int>(catalog, sql, officeId);
+			}
+			return Factory.Scalar<int>(catalog, sql, officeId);
         }
     }
 }
