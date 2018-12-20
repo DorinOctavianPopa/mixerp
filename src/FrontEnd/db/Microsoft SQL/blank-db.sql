@@ -19762,6 +19762,7 @@ BEGIN
         WHERE core.menus.menu_code=@menu_code
     )
 END
+GO
 
 INSERT INTO core.menus(menu_text, url, menu_code, level)
 SELECT 'Sales', '~/Modules/Sales/Index.mix', 'SA', 0 UNION ALL
@@ -19888,6 +19889,7 @@ GO
 
 ALTER TABLE core.menus
 ADD sort integer NOT NULL DEFAULT(0);
+GO
 
 ALTER TABLE core.menus
 ADD icon varchar(48) NOT NULL DEFAULT('')
@@ -19926,6 +19928,7 @@ UPDATE core.menus SET sort = 2, icon = 'rocket' WHERE menu_code ='STD';
 UPDATE core.menus SET sort = 3, icon = 'flipped rocket' WHERE menu_code ='STK';
 UPDATE core.menus SET sort = 4, icon = 'shipping' WHERE menu_code ='STJ';
 UPDATE core.menus SET sort = 5, icon = 'desktop' WHERE menu_code ='STA';
+GO
 
 CREATE FUNCTION policy.get_menu
 (
@@ -19945,7 +19948,6 @@ RETURNS @rettable TABLE
     parent_menu_id  integer
 )
 AS
-    
 BEGIN    
 	DECLARE @culture_exists bit
 	SET @culture_exists = 0
@@ -20242,6 +20244,55 @@ INSERT INTO config.mixerp
 SELECT 'MinimumLogLevel', 'Information', '' UNION ALL
 SELECT 'ApplicationLogDirectory', 'C:\mixerp-logs', 'Must be a physical path and application pool identity user must be able to write to it.' UNION ALL
 SELECT 'Mode', 'Development', ''
+GO
+
+20.12.2018 - 2
+
+CREATE PROCEDURE core.recreate_menu
+(
+    @menu_text          varchar(250),
+    @url                varchar(250),
+    @menu_code          varchar(12),
+    @level              integer,
+    @parent_menu_id     integer
+)
+AS
+
+BEGIN
+    DECLARE @menu_id        integer;
+    DECLARE @child_menus    table( id integer);
+
+    SELECT @menu_id = menu_id
+    FROM core.menus
+    WHERE menu_code=@menu_code;
+    
+	
+    WITH menu_cte(menu_id, path) AS (
+     SELECT
+        tn.menu_id,  CAST(tn.menu_id AS varchar(100)) AS path
+        FROM core.menus AS tn WHERE tn.menu_id =@menu_id
+    UNION ALL
+     SELECT
+        c.menu_id, CAST(p.path + '->' + CAST(c.menu_id AS varchar(50)) AS varchar(100))
+        FROM menu_cte AS p, core.menus AS c WHERE parent_menu_id = p.menu_id
+    )
+	INSERT INTO @child_menus(id)
+    SELECT menu_id FROM menu_cte;
+
+
+    DELETE FROM policy.menu_access
+    WHERE menu_id in (SELECT id FROM @child_menus);
+
+    DELETE FROM core.menu_locale
+    WHERE menu_id in (SELECT id FROM @child_menus);
+
+
+    DELETE FROM core.menus
+    WHERE menu_id in (SELECT id FROM @child_menus);
+    
+    INSERT INTO core.menus(menu_text, url, menu_code, level, parent_menu_id)
+    SELECT @menu_text, @url, @menu_code, @level, @parent_menu_id;
+END
 GO
 
 
