@@ -60,11 +60,13 @@ namespace MixERP.Net.FrontEnd.Base
                 userName = AppUsers.GetCurrent().View.UserName;
                 ipAddress = AppUsers.GetCurrent().View.IpAddress;
 
-                bool isDevelopmentMode =
-                    DbConfig.GetMixERPParameter(AppUsers.GetCurrentUserDB(), "Mode")
-                        .ToUpperInvariant()
-                        .Equals("DEVELOPMENT");
-                bool isLocalHost = PageUtility.IsLocalhost(this.Page);
+					string isDevelopmentModeString = DbConfig.GetMixERPParameter(AppUsers.GetCurrentUserDB(), "Mode")
+						  .ToUpperInvariant();
+
+					 bool isDevelopmentMode = isDevelopmentModeString.Equals("DEVELOPMENT");
+
+
+				bool isLocalHost = PageUtility.IsLocalhost(this.Page);
                 bool adminOnly = (this.AccessLevel.Equals(AccessLevel.AdminOnly) ||
                                   this.AccessLevel.Equals(AccessLevel.LocalhostAdmin));
 
