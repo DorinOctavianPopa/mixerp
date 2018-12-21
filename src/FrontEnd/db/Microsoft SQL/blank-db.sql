@@ -19774,7 +19774,7 @@ GO
 
 
 INSERT INTO core.menus(menu_text, url, menu_code, level, parent_menu_id)
-          SELECT 'Sales & Quotation', NULL, 'SAQ', 1, core.get_menu_id('SA')
+SELECT 'Sales & Quotation', NULL, 'SAQ', 1, core.get_menu_id('SA')
 UNION ALL SELECT 'Direct Sales', '~/Modules/Sales/DirectSales.mix', 'DRS', 2, core.get_menu_id('SAQ')
 UNION ALL SELECT 'Sales Quotation', '~/Modules/Sales/Quotation.mix', 'SQ', 2, core.get_menu_id('SAQ')
 UNION ALL SELECT 'Sales Order', '~/Modules/Sales/Order.mix', 'SO', 2, core.get_menu_id('SAQ')
@@ -20293,6 +20293,98 @@ BEGIN
     INSERT INTO core.menus(menu_text, url, menu_code, level, parent_menu_id)
     SELECT @menu_text, @url, @menu_code, @level, @parent_menu_id;
 END
+GO
+
+--21.12.2018
+
+CREATE TABLE core.kanbans
+(
+    kanban_id                               bigint IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    object_name                             varchar(128) NOT NULL,
+    user_id                                 integer NOT NULL REFERENCES office.users(user_id),
+    kanban_name                             varchar(128) NOT NULL,
+    description                             varchar(500),
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+CREATE PROCEDURE core.create_kanban
+(
+    @object_name                        varchar(128),
+    @user_id                            integer,
+    @kanban_name                        varchar(128),
+    @description                        varchar = ''
+)
+AS
+
+BEGIN
+    IF EXISTS
+    (
+        SELECT 1 FROM core.kanbans
+        WHERE object_name = @object_name
+        AND user_id = @user_id
+        AND kanban_name = @kanban_name
+    ) BEGIN
+        UPDATE core.kanbans
+        SET description = @description
+        WHERE object_name = @object_name
+        AND user_id = @user_id
+        AND kanban_name = @kanban_name;
+
+        RETURN;
+    END 
+
+    INSERT INTO core.kanbans(object_name, user_id, kanban_name, description)
+    SELECT @object_name, @user_id, @kanban_name, @description
+END
+GO
+
+CREATE TABLE core.nationalities
+(
+    nationality_code                        varchar(12) NOT NULL PRIMARY KEY,
+    nationality_name                        varchar(100) NOT NULL UNIQUE,
+    audit_user_id                           integer NULL REFERENCES office.users(user_id),
+    audit_ts                                datetime NULL 
+                                            DEFAULT(GETDATE())    
+)
+GO
+
+
+INSERT INTO core.account_masters(account_master_id, account_master_code, account_master_name)
+SELECT 1, 'BSA', 'Balance Sheet A/C' UNION ALL
+SELECT 2, 'PLA', 'Profit & Loss A/C' UNION ALL
+SELECT 3, 'OBS', 'Off Balance Sheet A/C';
+
+INSERT INTO core.account_masters(account_master_id, account_master_code, account_master_name, parent_account_master_id, normally_debit)
+SELECT 10100, 'CRA', 'Current Assets',                      1,      1    UNION ALL
+SELECT 10101, 'CAS', 'Cash A/C',                            10100,  1    UNION ALL
+SELECT 10102, 'CAB', 'Bank A/C',                            10100,  1    UNION ALL
+SELECT 10110, 'ACR', 'Accounts Receivable',                 10100,  1    UNION ALL
+SELECT 10200, 'FIA', 'Fixed Assets',                        1,      1    UNION ALL
+SELECT 10201, 'PPE', 'Property, Plants, and Equipments',    1,      1    UNION ALL
+SELECT 10300, 'OTA', 'Other Assets',                        1,      1    UNION ALL
+SELECT 15000, 'CRL', 'Current Liabilities',                 1,      0   UNION ALL
+SELECT 15010, 'ACP', 'Accounts Payable',                    15000,  0   UNION ALL
+SELECT 15011, 'SAP', 'Salary Payable',                      15000,  0   UNION ALL
+SELECT 15100, 'LTL', 'Long-Term Liabilities',               1,      0   UNION ALL
+SELECT 15200, 'SHE', 'Shareholders'' Equity',               1,      0   UNION ALL
+SELECT 15300, 'RET', 'Retained Earnings',                   15200,  0   UNION ALL
+SELECT 15400, 'DIP', 'Dividends Paid',                      15300,  0;
+
+
+INSERT INTO core.account_masters(account_master_id, account_master_code, account_master_name, parent_account_master_id, normally_debit)
+SELECT 20100, 'REV', 'Revenue',                           2,        0   UNION ALL
+SELECT 20200, 'NOI', 'Non Operating Income',              2,        0   UNION ALL
+SELECT 20300, 'FII', 'Financial Incomes',                 2,        0   UNION ALL
+SELECT 20301, 'DIR', 'Dividends Received',                20300,    0   UNION ALL
+SELECT 20400, 'COS', 'Cost of Sales',                     2,        1    UNION ALL
+SELECT 20500, 'DRC', 'Direct Costs',                      2,        1    UNION ALL
+SELECT 20600, 'ORX', 'Operating Expenses',                2,        1    UNION ALL
+SELECT 20700, 'FIX', 'Financial Expenses',                2,        1    UNION ALL
+SELECT 20701, 'INT', 'Interest Expenses',                 20700,    1    UNION ALL
+SELECT 20800, 'ITX', 'Income Tax Expenses',               2,        1;
 GO
 
 

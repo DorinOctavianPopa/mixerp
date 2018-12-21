@@ -13,9 +13,59 @@ You should have received a copy of the GNU General Public License
 along with MixERP.  If not, see <http://www.gnu.org/licenses/>.
 ***********************************************************************************/
 
-DROP SCHEMA hrm 
+USE [mixerp]
 GO
-CREATE SCHEMA hrm GO
+CREATE SCHEMA [hrm]
+GO
+use [mixerp]
+GO
+GRANT ALTER ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CONTROL ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT CREATE SEQUENCE ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT DELETE ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT EXECUTE ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT INSERT ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT REFERENCES ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT SELECT ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT TAKE OWNERSHIP ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT UPDATE ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW CHANGE TRACKING ON SCHEMA::[hrm] TO [public]
+GO
+use [mixerp]
+GO
+GRANT VIEW DEFINITION ON SCHEMA::[hrm] TO [public]
+GO
+
 
 CREATE TABLE hrm.education_levels
 (
@@ -49,7 +99,8 @@ CREATE TABLE hrm.employment_statuses
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.job_titles
 (
@@ -60,7 +111,8 @@ CREATE TABLE hrm.job_titles
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.pay_grades
 (
@@ -68,13 +120,14 @@ CREATE TABLE hrm.pay_grades
     pay_grade_code                          varchar(12) NOT NULL UNIQUE,
     pay_grade_name                          varchar(100) NOT NULL,
     minimum_salary                          decimal(24, 4) NOT NULL,
-    maximum_salary                          decimal(24, 5) NOT NULL
-                                            CHECK(maximum_salary >= minimum_salary),
-    description                             text DEFAULT(''),
+    maximum_salary                          decimal(24, 5) NOT NULL,
+                                            --CHECK(maximum_salary >= minimum_salary),
+    description                             varchar(500) DEFAULT(''),
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.shifts
 (
@@ -87,7 +140,8 @@ CREATE TABLE hrm.shifts
     audit_user_id                       integer NULL REFERENCES office.users(user_id),
     audit_ts                            datetime NULL 
                                         DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.leave_types
 (
@@ -98,7 +152,8 @@ CREATE TABLE hrm.leave_types
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.office_hours
 (
@@ -110,7 +165,8 @@ CREATE TABLE hrm.office_hours
     ends_on                                 datetime NOT NULL,
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.leave_benefits
 (
@@ -121,7 +177,8 @@ CREATE TABLE hrm.leave_benefits
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.employee_types
 (
@@ -132,7 +189,8 @@ CREATE TABLE hrm.employee_types
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.employees
 (
@@ -191,7 +249,8 @@ CREATE TABLE hrm.employees
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.employee_identification_details
 (
@@ -204,10 +263,12 @@ CREATE TABLE hrm.employee_identification_details
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())                                          
-) GO 
+) 
+GO 
 
 CREATE UNIQUE INDEX employee_identification_details_employee_id_itc_uix
-ON hrm.employee_identification_details(employee_id, identification_type_code) GO 
+ON hrm.employee_identification_details(employee_id, identification_type_code) 
+GO 
 
 
 
@@ -221,7 +282,8 @@ CREATE TABLE hrm.employee_social_network_details
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.contracts
 (
@@ -234,7 +296,7 @@ CREATE TABLE hrm.contracts
     began_on                                datetime,
     ended_on                                datetime,
     employment_status_code_id               integer NOT NULL REFERENCES hrm.employment_status_codes(employment_status_code_id),
-    verification_status_id                  integer NOT NULL REFERENCES core.verification_statuses(verification_status_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id),
     verified_by_user_id                     integer REFERENCES office.users(user_id),
     verified_on                             datetime,
     verification_reason                     varchar(128) NULL,
@@ -242,7 +304,8 @@ CREATE TABLE hrm.contracts
     
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.employee_experiences
 (
@@ -256,7 +319,8 @@ CREATE TABLE hrm.employee_experiences
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.employee_qualifications
 (
@@ -273,7 +337,8 @@ CREATE TABLE hrm.employee_qualifications
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.leave_applications
 (
@@ -285,14 +350,15 @@ CREATE TABLE hrm.leave_applications
     reason                                  varchar(500),
     start_date                              datetime,
     end_date                                datetime,
-    verification_status_id                  integer NOT NULL REFERENCES core.verification_statuses(verification_status_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id),
     verified_by_user_id                     integer REFERENCES office.users(user_id),
     verified_on                             datetime,
     verification_reason                     varchar(128) NULL,
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.resignations
 (
@@ -304,14 +370,15 @@ CREATE TABLE hrm.resignations
     forward_to                              integer REFERENCES hrm.employees(employee_id),
     reason                                  varchar(128) NOT NULL,
     details                                 varchar(500),
-    verification_status_id                  integer NOT NULL REFERENCES core.verification_statuses(verification_status_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id),
     verified_by_user_id                     integer REFERENCES office.users(user_id),
     verified_on                             datetime,
     verification_reason                     varchar(128) NULL,
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.terminations
 (
@@ -323,7 +390,7 @@ CREATE TABLE hrm.terminations
     reason                                  varchar(128) NOT NULL,
     details                                 varchar(500),
     service_end_date                        datetime NOT NULL,
-    verification_status_id                  integer NOT NULL REFERENCES core.verification_statuses(verification_status_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id),
     verified_by_user_id                     integer REFERENCES office.users(user_id),
     verified_on                             datetime,
     verification_reason                     varchar(128) NULL,
@@ -331,7 +398,8 @@ CREATE TABLE hrm.terminations
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
     
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.exit_types
 (
@@ -341,7 +409,8 @@ CREATE TABLE hrm.exit_types
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE TABLE hrm.exits
 (
@@ -353,7 +422,7 @@ CREATE TABLE hrm.exits
     exit_interview_details                  varchar(500),
     reason                                  varchar(128) NOT NULL,
     details                                 varchar(500),
-    verification_status_id                  integer NOT NULL REFERENCES core.verification_statuses(verification_status_id),
+    verification_status_id                  smallint NOT NULL REFERENCES core.verification_statuses(verification_status_id),
     verified_by_user_id                     integer REFERENCES office.users(user_id),
     verified_on                             datetime,
     verification_reason                     varchar(128) NULL,
@@ -361,12 +430,13 @@ CREATE TABLE hrm.exits
     audit_user_id                           integer NULL REFERENCES office.users(user_id),    
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 
 CREATE TABLE hrm.attendances
 (
-    attendance_id                           BIGinteger IDENTITY(1,1)  NOT NULL PRIMARY KEY,
+    attendance_id                           bigint IDENTITY(1,1)  NOT NULL PRIMARY KEY,
     office_id                               integer NOT NULL REFERENCES office.offices(office_id),
     employee_id                             integer NOT NULL REFERENCES hrm.employees(employee_id),
     attendance_date                         datetime NOT NULL,
@@ -374,20 +444,23 @@ CREATE TABLE hrm.attendances
     check_in_time                           datetime NULL,
     check_out_time                          datetime NULL,
     overtime_hours                          numeric NOT NULL,
-    was_absent                              bit NOT NULL CHECK(was_absent != was_present),
+    was_absent                              bit NOT NULL, 
+											--CHECK(was_absent != was_present),
     reason_for_absenteeism                  varchar(500),
     audit_user_id                           integer NULL REFERENCES office.users(user_id),
     audit_ts                                datetime NULL 
                                             DEFAULT(GETDATE())    
-) GO 
+) 
+GO 
 
 CREATE UNIQUE INDEX attendance_date_employee_id_uix
-ON hrm.attendances(attendance_date, employee_id) GO 
+ON hrm.attendances(attendance_date, employee_id) 
+GO 
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/02.functions-and-logic/functions/hrm.get_employee_by_employee_id.sql --<--<--
-DROP FUNCTION hrm.get_employee_by_employee_id 
-GO 
+--DROP FUNCTION hrm.get_employee_by_employee_id 
+--GO 
 
 CREATE FUNCTION hrm.get_employee_by_employee_id(@employee_id integer)
 RETURNS varchar(500)
@@ -402,8 +475,8 @@ END
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/02.functions-and-logic/functions/hrm.get_employee_code_by_employee_id.sql --<--<--
-DROP FUNCTION hrm.get_employee_code_by_employee_id
-GO 
+--DROP FUNCTION hrm.get_employee_code_by_employee_id
+--GO 
 
 CREATE FUNCTION hrm.get_employee_code_by_employee_id(@employee_id integer)
 RETURNS varchar(500)
@@ -414,12 +487,11 @@ BEGIN
     FROM hrm.employees
     WHERE employee_id = @employee_id)      
 END
-
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/02.functions-and-logic/functions/hrm.get_employee_name_by_employee_id.sql --<--<--
-DROP FUNCTION hrm.get_employee_name_by_employee_id
- GO 
+--DROP FUNCTION hrm.get_employee_name_by_employee_id
+ --GO 
 
 CREATE FUNCTION hrm.get_employee_name_by_employee_id(@employee_id integer)
 RETURNS varchar(500)
@@ -501,68 +573,66 @@ GO
 --CREATE TRIGGER undismiss_employee_trigger BEFORE DELETE ON hrm.terminations FOR EACH ROW EXECUTE PROCEDURE hrm.undismiss_employee() GO 
 --CREATE TRIGGER undismiss_employee_trigger BEFORE DELETE ON hrm.exits FOR EACH ROW EXECUTE PROCEDURE hrm.undismiss_employee() GO 
 
+
+
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/03.menus/0.menus.sql --<--<--
 --This table should not be localized.
-EXEC core.recreate_menu 'Employees', '~/Modules/HRM/Index.mix', 'HRM', 0, NULL
- GO 
-
-EXEC core.recreate_menu 'Tasks', NULL, 'HRMTA', 1, SELECT core.get_menu_id('HRM')
- GO 
-EXEC core.recreate_menu 'Attendance', '~/Modules/HRM/Tasks/Attendance.mix', 'ATTNDCE', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Employees', '~/Modules/HRM/Tasks/Employees.mix', 'EMPL', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Contracts', '~/Modules/HRM/Tasks/Contracts.mix', 'CTRCT', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Leave Application', '~/Modules/HRM/Tasks/LeaveApplications.mix', 'LEVAPP', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Resignations', '~/Modules/HRM/Tasks/Resignations.mix', 'RESIGN', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Terminations', '~/Modules/HRM/Tasks/Terminations.mix', 'TERMIN', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-EXEC core.recreate_menu 'Exits', '~/Modules/HRM/Tasks/Exits.mix', 'EXIT', 2, SELECT core.get_menu_id('HRMTA') 
-GO 
-
-EXEC core.recreate_menu 'Verification', NULL, 'HRMVER', 1, SELECT core.get_menu_id('HRM') 
-GO 
-EXEC core.recreate_menu 'Verify Contracts', '~/Modules/HRM/Verification/Contracts.mix', 'VERCTRCT', 2, SELECT core.get_menu_id('HRMVER') 
-GO 
-EXEC core.recreate_menu 'Verify Leave Applications', '~/Modules/HRM/Verification/LeaveApplications.mix', 'VERLEVAPP', 2, SELECT core.get_menu_id('HRMVER') 
-GO 
-EXEC core.recreate_menu 'Verify Resignations', '~/Modules/HRM/Verification/Resignations.mix', 'VERRESIGN', 2, SELECT core.get_menu_id('HRMVER') 
-GO 
-EXEC core.recreate_menu 'Verify Terminations', '~/Modules/HRM/Verification/Terminations.mix', 'VERTERMIN', 2, SELECT core.get_menu_id('HRMVER') 
-GO 
-EXEC core.recreate_menu 'Verify Exits', '~/Modules/HRM/Verification/Exits.mix', 'VEREXIT', 2, SELECT core.get_menu_id('HRMVER') 
-GO 
-
-
-EXEC core.recreate_menu 'Setup & Maintenance', NULL, 'HRMSSM', 1, SELECT core.get_menu_id('HRM') 
-GO 
-EXEC core.recreate_menu 'Employment Statuses', '~/Modules/HRM/Setup/EmploymentStatuses.mix', 'EMPSTA', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Employee Types', '~/Modules/HRM/Setup/EmployeeTypes.mix', 'EMPTYP', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Education Levels', '~/Modules/HRM/Setup/EducationLevels.mix', 'EDULVL', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Job Titles', '~/Modules/HRM/Setup/JobTitles.mix', 'JOBTA', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Pay Grades', '~/Modules/HRM/Setup/PayGrades.mix', 'PATGR', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Shifts', '~/Modules/HRM/Setup/Shifts.mix', 'SHIFT', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Office Hours', '~/Modules/HRM/Setup/OfficeHours.mix', 'OFFHRS', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Leave Types', '~/Modules/HRM/Setup/LeaveTypes.mix', 'LEVTYP', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Leave Benefits', '~/Modules/HRM/Setup/LeaveBenefits.mix', 'LEVBEN', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-EXEC core.recreate_menu 'Exit Types', '~/Modules/HRM/Setup/ExitTypes.mix', 'EXITTYP', 2, SELECT core.get_menu_id('HRMSSM') 
-GO 
-
-EXEC core.recreate_menu 'HRM Reports', NULL, 'HRMRPT', 1, SELECT core.get_menu_id('HRM') 
-GO 
-EXEC core.recreate_menu 'Attendances', '~/Modules/HRM/Reports/Attendances.mix', 'HRMRPTAT', 2, SELECT core.get_menu_id('HRMRPT') 
+EXEC core.recreate_menu 'Employees', '~/Modules/HRM/Index.mix', 'HRM', 0, NULL 
+DECLARE @val varchar(500)
+SELECT @val = core.get_menu_id('HRM')
+EXEC core.recreate_menu 'Tasks', NULL, 'HRMTA', 1, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Attendance', '~/Modules/HRM/Tasks/Attendance.mix', 'ATTNDCE', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Employees', '~/Modules/HRM/Tasks/Employees.mix', 'EMPL', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Contracts', '~/Modules/HRM/Tasks/Contracts.mix', 'CTRCT', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Leave Application', '~/Modules/HRM/Tasks/LeaveApplications.mix', 'LEVAPP', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Resignations', '~/Modules/HRM/Tasks/Resignations.mix', 'RESIGN', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Terminations', '~/Modules/HRM/Tasks/Terminations.mix', 'TERMIN', 2, @val
+SELECT @val = core.get_menu_id('HRMTA') 
+EXEC core.recreate_menu 'Exits', '~/Modules/HRM/Tasks/Exits.mix', 'EXIT', 2, @val
+SELECT @val = core.get_menu_id('HRM')  
+EXEC core.recreate_menu 'Verification', NULL, 'HRMVER', 1, @val
+SELECT @val = core.get_menu_id('HRMVER') 
+EXEC core.recreate_menu 'Verify Contracts', '~/Modules/HRM/Verification/Contracts.mix', 'VERCTRCT', 2, @val
+SELECT @val = core.get_menu_id('HRMVER') 
+EXEC core.recreate_menu 'Verify Leave Applications', '~/Modules/HRM/Verification/LeaveApplications.mix', 'VERLEVAPP', 2, @val
+SELECT @val = core.get_menu_id('HRMVER') 
+EXEC core.recreate_menu 'Verify Resignations', '~/Modules/HRM/Verification/Resignations.mix', 'VERRESIGN', 2, @val
+SELECT @val = core.get_menu_id('HRMVER') 
+EXEC core.recreate_menu 'Verify Terminations', '~/Modules/HRM/Verification/Terminations.mix', 'VERTERMIN', 2, @val
+SELECT @val = core.get_menu_id('HRMVER') 
+EXEC core.recreate_menu 'Verify Exits', '~/Modules/HRM/Verification/Exits.mix', 'VEREXIT', 2, @val
+SELECT @val = core.get_menu_id('HRM') 
+EXEC core.recreate_menu 'Setup & Maintenance', NULL, 'HRMSSM', 1, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Employment Statuses', '~/Modules/HRM/Setup/EmploymentStatuses.mix', 'EMPSTA', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Employee Types', '~/Modules/HRM/Setup/EmployeeTypes.mix', 'EMPTYP', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Education Levels', '~/Modules/HRM/Setup/EducationLevels.mix', 'EDULVL', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Job Titles', '~/Modules/HRM/Setup/JobTitles.mix', 'JOBTA', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Pay Grades', '~/Modules/HRM/Setup/PayGrades.mix', 'PATGR', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Shifts', '~/Modules/HRM/Setup/Shifts.mix', 'SHIFT', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Office Hours', '~/Modules/HRM/Setup/OfficeHours.mix', 'OFFHRS', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Leave Types', '~/Modules/HRM/Setup/LeaveTypes.mix', 'LEVTYP', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Leave Benefits', '~/Modules/HRM/Setup/LeaveBenefits.mix', 'LEVBEN', 2, @val
+SELECT @val = core.get_menu_id('HRMSSM') 
+EXEC core.recreate_menu 'Exit Types', '~/Modules/HRM/Setup/ExitTypes.mix', 'EXITTYP', 2, @val
+SELECT @val = core.get_menu_id('HRM') 
+EXEC core.recreate_menu 'HRM Reports', NULL, 'HRMRPT', 1, @val
+SELECT @val = core.get_menu_id('HRMRPT')  
+EXEC core.recreate_menu 'Attendances', '~/Modules/HRM/Reports/Attendances.mix', 'HRMRPTAT', 2, @val
 GO 
 
 
@@ -581,7 +651,8 @@ UPDATE core.menus SET sort = 0, icon = 'bar chart' WHERE parent_menu_id IN
     SELECT menu_id 
     FROM core.menus 
     WHERE menu_code ='HRMRPT'
-) GO 
+) 
+GO 
 
 UPDATE core.menus SET sort = 2, icon = 'tasks' WHERE menu_code ='HRMTA' 
 GO 
@@ -595,8 +666,8 @@ END
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.contract_scrud_view.sql --<--<--
-DROP VIEW hrm.contract_scrud_view 
-GO 
+--DROP VIEW hrm.contract_scrud_view 
+--GO 
 
 CREATE VIEW hrm.contract_scrud_view
 AS
@@ -628,7 +699,7 @@ ON hrm.leave_benefits.leave_benefit_id = hrm.contracts.leave_benefit_id
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.contract_verification_scrud_view.sql --<--<--
-DROP VIEW hrm.contract_verification_scrud_view GO 
+--DROP VIEW hrm.contract_verification_scrud_view GO 
 
 CREATE VIEW hrm.contract_verification_scrud_view
 AS
@@ -661,8 +732,8 @@ WHERE verification_status_id = 0
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.employee_experience_scrud_view.sql --<--<--
-DROP VIEW hrm.employee_experience_scrud_view 
-GO 
+--DROP VIEW hrm.employee_experience_scrud_view 
+--GO 
 
 CREATE VIEW hrm.employee_experience_scrud_view
 AS
@@ -680,8 +751,8 @@ ON hrm.employee_experiences.employee_id = hrm.employees.employee_id
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.employee_identification_detail_scrud_view.sql --<--<--
-DROP VIEW hrm.employee_identification_detail_scrud_view 
-GO 
+--DROP VIEW hrm.employee_identification_detail_scrud_view 
+--GO 
 
 CREATE VIEW hrm.employee_identification_detail_scrud_view
 AS
@@ -697,14 +768,15 @@ FROM hrm.employee_identification_details
 INNER JOIN hrm.employees
 ON hrm.employee_identification_details.employee_id = hrm.employees.employee_id
 INNER JOIN core.identification_types
-ON hrm.employee_identification_details.identification_type_code = core.identification_types.identification_type_code GO 
+ON hrm.employee_identification_details.identification_type_code = core.identification_types.identification_type_code 
+GO 
 
 
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.employee_qualification_scrud_view.sql --<--<--
-DROP VIEW hrm.employee_qualification_scrud_view 
-GO 
+--DROP VIEW hrm.employee_qualification_scrud_view 
+--GO 
 
 CREATE VIEW hrm.employee_qualification_scrud_view
 AS
@@ -729,8 +801,8 @@ GO
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.employee_social_network_detail_scrud_view.sql --<--<--
-DROP VIEW hrm.employee_social_network_detail_scrud_view 
-GO 
+--DROP VIEW hrm.employee_social_network_detail_scrud_view 
+--GO 
 
 CREATE VIEW hrm.employee_social_network_detail_scrud_view
 AS
@@ -753,8 +825,8 @@ GO
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.employee_type_scrud_view.sql --<--<--
-DROP VIEW hrm.employee_type_scrud_view 
-GO 
+--DROP VIEW hrm.employee_type_scrud_view 
+--GO 
 
 CREATE VIEW hrm.employee_type_scrud_view
 AS
@@ -766,8 +838,8 @@ FROM hrm.employee_types
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.exit_verification_scrud_view.sql --<--<--
-DROP VIEW hrm.exit_scrud_view 
-GO 
+--DROP VIEW hrm.exit_scrud_view 
+--GO 
 
 CREATE VIEW hrm.exit_scrud_view
 AS
@@ -796,8 +868,8 @@ GO
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.leave_application_scrud_view.sql --<--<--
-DROP VIEW hrm.leave_application_scrud_view 
-GO 
+--DROP VIEW hrm.leave_application_scrud_view 
+--GO 
 
 CREATE VIEW hrm.leave_application_scrud_view
 AS
@@ -821,8 +893,8 @@ ON office.users.user_id = hrm.leave_applications.entered_by
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.leave_application_verification_scrud_view.sql --<--<--
-DROP VIEW hrm.leave_application_verification_scrud_view 
-GO 
+--DROP VIEW hrm.leave_application_verification_scrud_view 
+--GO 
 
 CREATE VIEW hrm.leave_application_verification_scrud_view
 AS
@@ -847,8 +919,8 @@ WHERE verification_status_id = 0
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.office_hour_scrud_view.sql --<--<--
-DROP VIEW hrm.office_hour_scrud_view 
-GO 
+--DROP VIEW hrm.office_hour_scrud_view 
+--GO 
 
 CREATE VIEW hrm.office_hour_scrud_view
 AS
@@ -870,8 +942,8 @@ ON core.week_days.week_day_id = hrm.office_hours.week_day_id
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.resignation_verification_view.sql --<--<--
-DROP VIEW hrm.resignation_verification_scrud_view 
-GO 
+--DROP VIEW hrm.resignation_verification_scrud_view 
+--GO 
 
 CREATE VIEW hrm.resignation_verification_scrud_view
 AS
@@ -895,8 +967,8 @@ WHERE verification_status_id = 0
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.resignation_view.sql --<--<--
-DROP VIEW hrm.resignation_scrud_view 
-GO 
+--DROP VIEW hrm.resignation_scrud_view 
+--GO 
 
 CREATE VIEW hrm.resignation_scrud_view
 AS
@@ -919,8 +991,8 @@ ON forward_to.employee_id = hrm.resignations.forward_to
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.termination_scrud_view.sql --<--<--
-DROP VIEW hrm.termination_scrud_view 
-GO 
+--DROP VIEW hrm.termination_scrud_view 
+--GO 
 
 CREATE VIEW hrm.termination_scrud_view
 AS
@@ -944,8 +1016,8 @@ ON forwarded_to.employee_id = hrm.terminations.forward_to
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.scrud-views/hrm.termination_verification_scrud_view.sql --<--<--
-DROP VIEW hrm.termination_verification_scrud_view 
-GO 
+--DROP VIEW hrm.termination_verification_scrud_view 
+--GO 
 
 CREATE VIEW hrm.termination_verification_scrud_view
 AS
@@ -970,8 +1042,8 @@ WHERE verification_status_id = 0
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.views/hrm.attendance_view.sql --<--<--
-DROP VIEW hrm.attendance_view 
-GO 
+--DROP VIEW hrm.attendance_view 
+--GO 
 
 CREATE VIEW hrm.attendance_view
 AS
@@ -997,8 +1069,8 @@ ON hrm.employees.employee_id = hrm.attendances.employee_id
 GO 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/05.views/hrm.employee_view.sql --<--<--
-DROP VIEW hrm.employee_view 
-GO 
+--DROP VIEW hrm.employee_view 
+--GO 
 
 CREATE VIEW hrm.employee_view
 AS
@@ -1112,7 +1184,7 @@ along with MixERP.  If not, see <http://www.gnu.org/licenses/>.
 ***********************************************************************************/
 
 --The meaning of the following should not change
-INSERT INTO hrm.employment_status_codes
+INSERT INTO hrm.employment_status_codes(employment_status_code_id,status_code,status_code_name)
 SELECT -7, 'DEC', 'Deceased'                UNION ALL
 SELECT -6, 'DEF', 'Defaulter'               UNION ALL
 SELECT -5, 'TER', 'Terminated'              UNION ALL
@@ -1128,8 +1200,8 @@ GO
 
 INSERT INTO hrm.employment_statuses(employment_status_code, employment_status_name, default_employment_status_code_id, is_contract)
 SELECT 'EMP', 'Employee',       0, 0 UNION ALL
-SELECT 'INT', 'Intern',         1, true UNION ALL
-SELECT 'CON', 'Contract Basis', 1, true UNION ALL
+SELECT 'INT', 'Intern',         1, 1 UNION ALL
+SELECT 'CON', 'Contract Basis', 1, 1 UNION ALL
 SELECT 'PER', 'Permanent',      2, 0 
 GO 
 
@@ -1149,10 +1221,16 @@ SELECT 'L-1', 'Level 1', 0, 0
 GO 
 
 INSERT INTO hrm.shifts(shift_code, shift_name, begins_from, ends_on)
-SELECT 'MOR', 'Morning Shift',  '6:00'::time,   '14:00'::time   UNION ALL
+SELECT 'MOR', 'Morning Shift',  '6:00',   '14:00'   UNION ALL
 SELECT 'DAY', 'Day Shift',      '14:00',        '20:00'         UNION ALL
 SELECT 'NIT', 'Night Shift',    '20:00',        '6:00' 
 GO 
+
+INSERT INTO core.accounts(account_master_id,account_number,account_name, sys_type, parent_account_id,currency_code) 
+SELECT 15010, '20100', 'Accounts Payable', 0, core.get_account_id_by_account_name('Current Liabilities'),'RON'
+GO
+
+
 
 INSERT INTO hrm.employee_types(employee_type_code, employee_type_name, account_id)
 SELECT 'DEF', 'Default',            core.get_account_id_by_account_number('20100') UNION ALL
@@ -1176,140 +1254,155 @@ SELECT 'TER', 'Termination' UNION ALL
 SELECT 'DEC', 'Deceased' 
 GO 
 
+INSERT INTO core.genders(gender_code,gender_name)
+SELECT 'F', 'Female' UNION ALL
+SELECT 'M', 'Male' UNION ALL
+SELECT 'O', 'Other';
+GO
+
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/99.sample/employees.sample --<--<--
 INSERT INTO hrm.employees(employee_code, first_name, middle_name, last_name, employee_name, gender_code, marital_status_id, joined_on, office_id, user_id, employee_type_id, current_department_id, current_role_id, current_employment_status_id, current_job_title_id, current_pay_grade_id, current_shift_id, date_of_birth, photo, bank_account_number, bank_name, bank_branch_name)
-SELECT 'MI-0001', 'Micheal', '', 'Paul', 'Paul, Micheal', 'M', '1'::int, '2015-09-12'::date, '2'::int, '2'::int, '1'::int, '1'::int, '1'::int, '1'::int, '1'::int, '1'::int, '2'::int, '1997-07-01'::date, 'sample/man-838636_640.jpg', '1-2939-3944-03', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'AR-0001', 'Arjun', '', 'Rivers', 'Rivers, Arjun', 'M', '2', '2015-09-05', '2', '2', '2', '2', '2', '2', '2', '1', '2', '2006-11-04', 'sample/beautiful-19075_640.jpg', '1-2939-3944-04', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'LA-0001', 'Lamar', '', 'Hull', 'Hull, Lamar', 'M', '3', '2015-09-24', '2', '2', '3', '3', '3', '3', '3', '1', '2', '1998-03-05', 'sample/beautiful-653317_640.jpg', '1-2939-3944-05', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'BE-0001', 'Beau', '', 'Stokes', 'Stokes, Beau', 'M', '4', '2015-09-21', '2', '2', '4', '4', '4', '4', '4', '1', '2', '1982-09-20', 'sample/beauty-20150_640.jpg', '1-2939-3944-06', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'KY-0001', 'Kyan', '', 'Barr', 'Barr, Kyan', 'M', '5', '2015-10-03', '2', '2', '5', '1', '5', '1', '5', '1', '2', '1978-10-21', 'sample/beauty-739667_640.jpg', '1-2939-3944-07', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'AR-0002', 'Arturo', '', 'Newman', 'Newman, Arturo', 'M', '6', '2015-09-12', '2', '2', '1', '2', '6', '2', '6', '1', '2', '2001-10-16', 'sample/brunette-15963_640.jpg', '1-2939-3944-08', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'MA-0001', 'Mateo', '', 'Mcdaniel', 'Mcdaniel, Mateo', 'F', '7', '2015-09-22', '2', '2', '2', '3', '7', '3', '7', '1', '2', '2013-12-13', 'sample/businessman-805770_640.jpg', '1-2939-3944-09', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'LA-0002', 'Larry', '', 'Farmer', 'Farmer, Larry', 'F', '1', '2015-10-06', '2', '2', '3', '4', '8', '4', '8', '1', '2', '2001-03-23', 'sample/chinese-572945_640.jpg', '1-2939-3944-10', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'BR-0001', 'Bryce', '', 'West', 'West, Bryce', 'M', '2', '2015-09-26', '2', '2', '4', '1', '9', '1', '1', '1', '2', '2012-09-18', 'sample/cowboy-67630_640.jpg', '1-2939-3944-11', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'DA-0001', 'Dalton', '', 'Cunningham', 'Cunningham, Dalton', 'F', '3', '2015-10-02', '2', '2', '5', '2', '10', '2', '2', '1', '2', '1980-10-02', 'sample/eyes-622355_640.jpg', '1-2939-3944-12', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'CH-0001', 'Chaz', '', 'Cote', 'Cote, Chaz', 'F', '4', '2015-10-02', '2', '2', '1', '3', '11', '3', '3', '1', '2', '1987-10-08', 'sample/fairy-tales-636649_640.jpg', '1-2939-3944-13', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'SY-0001', 'Sydney', '', 'Holley', 'Holley, Sydney', 'F', '5', '2015-09-08', '2', '2', '2', '4', '12', '4', '4', '1', '2', '1978-03-02', 'sample/friend-762590_640.jpg', '1-2939-3944-14', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'KA-0001', 'Karter', '', 'Barrera', 'Barrera, Karter', 'M', '6', '2015-10-01', '2', '2', '3', '1', '1', '1', '5', '1', '2', '1979-10-18', 'sample/girl-102829_640.jpg', '1-2939-3944-15', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'GU-0001', 'Gunner', '', 'Moses', 'Moses, Gunner', 'M', '7', '2015-09-14', '2', '2', '4', '2', '2', '2', '6', '1', '2', '1991-12-01', 'sample/girl-518321_640.jpg', '1-2939-3944-16', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'MA-0002', 'Marlon', '', 'Gates', 'Gates, Marlon', 'M', '1', '2015-09-11', '2', '2', '5', '3', '3', '3', '7', '1', '2', '1996-04-26', 'sample/girl-518331_640.jpg', '1-2939-3944-17', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'FI-0001', 'Fisher', '', 'Velazquez', 'Velazquez, Fisher', 'M', '2', '2015-09-12', '2', '2', '1', '4', '4', '4', '8', '1', '2', '1982-01-20', 'sample/girl-602177_640.jpg', '1-2939-3944-18', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'JA-0001', 'Jayce', '', 'Marsh', 'Marsh, Jayce', 'M', '3', '2015-08-31', '2', '2', '2', '1', '5', '1', '1', '1', '2', '1986-04-28', 'sample/girl-637568_640.jpg', '1-2939-3944-19', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'BE-0002', 'Bernardo', '', 'Franks', 'Franks, Bernardo', 'M', '4', '2015-09-12', '2', '2', '3', '2', '6', '2', '2', '1', '2', '2003-10-01', 'sample/girl-803179_640.jpg', '1-2939-3944-20', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'VI-0001', 'Victoria', '', 'Bland', 'Bland, Victoria', 'M', '5', '2015-10-01', '2', '2', '4', '3', '7', '3', '3', '1', '2', '1986-10-18', 'sample/girl-846991_640.jpg', '1-2939-3944-21', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'LE-0001', 'Lewis', '', 'Farrell', 'Farrell, Lewis', 'M', '6', '2015-08-28', '2', '2', '5', '4', '8', '4', '4', '1', '2', '1981-11-08', 'sample/girls-602168_640.jpg', '1-2939-3944-22', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'MA-0003', 'Maurice', '', 'Gibbs', 'Gibbs, Maurice', 'F', '7', '2015-10-10', '2', '2', '1', '1', '9', '1', '5', '1', '2', '1997-07-14', 'sample/guy-549173_640.jpg', '1-2939-3944-23', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'LE-0002', 'Lee', '', 'Mueller', 'Mueller, Lee', 'F', '1', '2015-10-01', '2', '2', '2', '2', '10', '2', '6', '1', '2', '1986-11-30', 'sample/indian-627831_640.jpg', '1-2939-3944-24', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'HA-0001', 'Hassan', '', 'Hendricks', 'Hendricks, Hassan', 'M', '2', '2015-09-21', '2', '2', '3', '3', '11', '3', '7', '1', '2', '1979-03-28', 'sample/james-stewart-392932_640.jpg', '1-2939-3944-25', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'IS-0001', 'Isabella', '', 'Rankin', 'Rankin, Isabella', 'F', '3', '2015-09-22', '2', '2', '4', '4', '12', '4', '8', '1', '2', '2010-08-31', 'sample/male-777913_640.jpg', '1-2939-3944-26', 'Bank of America', 'Myrtle Ave' UNION ALL
-SELECT 'MA-0004', 'Matthias', '', 'Fitzpatrick', 'Fitzpatrick, Matthias', 'F', '4', '2015-10-06', '2', '2', '5', '1', '1', '1', '1', '1', '2', '1989-09-19', 'sample/man-140547_640.jpg', '1-2939-3944-27', 'Bank of America', 'Myrtle Ave' 
+SELECT 'MI-0001', 'Micheal', '', 'Paul', 'Paul, Micheal', 'M', 1, '2015-09-12', 1, 2, 1, 1, 1, 1, 1, 1, 2, '1997-07-01', 'sample/man-838636_640.jpg', '1-2939-3944-03', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'AR-0001', 'Arjun', '', 'Rivers', 'Rivers, Arjun', 'M', 2, '2015-09-05', 1, 2, 2, 2, 2, 2, 2, 1, 2, '2006-11-04', 'sample/beautiful-19075_640.jpg', '1-2939-3944-04', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'LA-0001', 'Lamar', '', 'Hull', 'Hull, Lamar', 'M', 3, '2015-09-24', 1, 2, 3, 3, 3, 3, 3, 1, 2, '1998-03-05', 'sample/beautiful-653317_640.jpg', '1-2939-3944-05', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'BE-0001', 'Beau', '', 'Stokes', 'Stokes, Beau', 'M', 4, '2015-09-21', 1, 2, 4, 4, 4, 4, 4, 1, 2, '1982-09-20', 'sample/beauty-20150_640.jpg', '1-2939-3944-06', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'KY-0001', 'Kyan', '', 'Barr', 'Barr, Kyan', 'M', 5, '2015-10-03', 1, 2, 5, 1, 5, 1, 5, 1, 2, '1978-10-21', 'sample/beauty-739667_640.jpg', '1-2939-3944-07', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'AR-0002', 'Arturo', '', 'Newman', 'Newman, Arturo', 'M', 6, '2015-09-12', 1, 2, 1, 2, 6, 2, 6, 1, 2, '2001-10-16', 'sample/brunette-15963_640.jpg', '1-2939-3944-08', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'MA-0001', 'Mateo', '', 'Mcdaniel', 'Mcdaniel, Mateo', 'F', 7, '2015-09-22', 1, 2, 2, 3, 7, 3, 7, 1, 2, '2013-12-13', 'sample/businessman-805770_640.jpg', '1-2939-3944-09', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'LA-0002', 'Larry', '', 'Farmer', 'Farmer, Larry', 'F', 1, '2015-10-06', 1, 2, 3, 4, 8, 4, 8, 1, 2, '2001-03-23', 'sample/chinese-572945_640.jpg', '1-2939-3944-10', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'BR-0001', 'Bryce', '', 'West', 'West, Bryce', 'M', 2, '2015-09-26', 1, 2, 4, 1, 9, 1, 1, 1, 2, '2012-09-18', 'sample/cowboy-67630_640.jpg', '1-2939-3944-11', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'DA-0001', 'Dalton', '', 'Cunningham', 'Cunningham, Dalton', 'F', 3, '2015-10-02', 1, 2, 5, 2, 10, 2, 2, 1, 2, '1980-10-02', 'sample/eyes-622355_640.jpg', '1-2939-3944-12', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'CH-0001', 'Chaz', '', 'Cote', 'Cote, Chaz', 'F', 4, '2015-10-02', 1, 2, 1, 3, 11, 3, 3, 1, 2, '1987-10-08', 'sample/fairy-tales-636649_640.jpg', '1-2939-3944-13', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'SY-0001', 'Sydney', '', 'Holley', 'Holley, Sydney', 'F', 5, '2015-09-08', 1, 2, 2, 4, 12, 4, 4, 1, 2, '1978-03-02', 'sample/friend-762590_640.jpg', '1-2939-3944-14', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'KA-0001', 'Karter', '', 'Barrera', 'Barrera, Karter', 'M', 6, '2015-10-01', 1, 2, 3, 1, 1, 1, 5, 1, 2, '1979-10-18', 'sample/girl-102829_640.jpg', '1-2939-3944-15', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'GU-0001', 'Gunner', '', 'Moses', 'Moses, Gunner', 'M', 7, '2015-09-14', 1, 2, 4, 2, 2, 2, 6, 1, 2, '1991-12-01', 'sample/girl-518321_640.jpg', '1-2939-3944-16', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'MA-0002', 'Marlon', '', 'Gates', 'Gates, Marlon', 'M', 1, '2015-09-11', 1, 2, 5, 3, 3, 3, 7, 1, 2, '1996-04-26', 'sample/girl-518331_640.jpg', '1-2939-3944-17', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'FI-0001', 'Fisher', '', 'Velazquez', 'Velazquez, Fisher', 'M', 2, '2015-09-12', 1, 2, 1, 4, 4, 4, 8, 1, 2, '1982-01-20', 'sample/girl-602177_640.jpg', '1-2939-3944-18', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'JA-0001', 'Jayce', '', 'Marsh', 'Marsh, Jayce', 'M', 3, '2015-08-31', 1, 2, 2, 1, 5, 1, 1, 1, 2, '1986-04-28', 'sample/girl-637568_640.jpg', '1-2939-3944-19', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'BE-0002', 'Bernardo', '', 'Franks', 'Franks, Bernardo', 'M', 4, '2015-09-12', 1, 2, 3, 2, 6, 2, 2, 1, 2, '2003-10-01', 'sample/girl-803179_640.jpg', '1-2939-3944-20', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'VI-0001', 'Victoria', '', 'Bland', 'Bland, Victoria', 'M', 5, '2015-10-01', 1, 2, 4, 3, 7, 3, 3, 1, 2, '1986-10-18', 'sample/girl-846991_640.jpg', '1-2939-3944-21', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'LE-0001', 'Lewis', '', 'Farrell', 'Farrell, Lewis', 'M', 6, '2015-08-28', 1, 2, 5, 4, 8, 4, 4, 1, 2, '1981-11-08', 'sample/girls-602168_640.jpg', '1-2939-3944-22', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'MA-0003', 'Maurice', '', 'Gibbs', 'Gibbs, Maurice', 'F', 7, '2015-10-10', 1, 2, 1, 1, 9, 1, 5, 1, 2, '1997-07-14', 'sample/guy-549173_640.jpg', '1-2939-3944-23', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'LE-0002', 'Lee', '', 'Mueller', 'Mueller, Lee', 'F', 1, '2015-10-01', 1, 2, 2, 2, 10, 2, 6, 1, 2, '1986-11-30', 'sample/indian-627831_640.jpg', '1-2939-3944-24', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'HA-0001', 'Hassan', '', 'Hendricks', 'Hendricks, Hassan', 'M', 2, '2015-09-21', 1, 2, 3, 3, 11, 3, 7, 1, 2, '1979-03-28', 'sample/james-stewart-392932_640.jpg', '1-2939-3944-25', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'IS-0001', 'Isabella', '', 'Rankin', 'Rankin, Isabella', 'F', 3, '2015-09-22', 1, 2, 4, 4, 12, 4, 8, 1, 2, '2010-08-31', 'sample/male-777913_640.jpg', '1-2939-3944-26', 'Bank of America', 'Myrtle Ave' UNION ALL
+SELECT 'MA-0004', 'Matthias', '', 'Fitzpatrick', 'Fitzpatrick, Matthias', 'F', 4, '2015-10-06', 1, 2, 5, 1, 1, 1, 1, 1, 2, '1989-09-19', 'sample/man-140547_640.jpg', '1-2939-3944-27', 'Bank of America', 'Myrtle Ave' 
 GO 
 
 
 
 
-DECLARE _attendance_date datetime GO 
-DECLARE _employee_ids integer[] GO 
-DECLARE _employee_id integer GO 
-DECLARE _was_present bit GO 
-DECLARE _was_absent bit GO 
-DECLARE _reason text GO 
-DECLARE _check_in datetime GO 
-DECLARE _check_out datetime GO 
-DECLARE _overtime_hours numeric GO 
+DECLARE @attendance_date datetime
+DECLARE @employee_id integer 
+DECLARE @was_present bit 
+DECLARE @was_absent bit  
+DECLARE @reason varchar(500)
+DECLARE @check_in datetime  
+DECLARE @check_out datetime 
+DECLARE @overtime_hours numeric 
 
 BEGIN
-    SELECT 
-        array_agg(employee_id) 
-    INTO
-        _employee_ids
-    FROM hrm.employees GO 
+    DELETE FROM hrm.attendances  
     
-    DELETE FROM hrm.attendances GO 
-    FOR _attendance_date IN
-    SELECT * FROM generate_series('2015-9-29', '2016-9-1', INTERVAL '1 day') D
-    LOOP
-        FOREACH _employee_id IN ARRAY _employee_ids
-        LOOP
-            _was_present := cast(cast(random() as integer) as bit) GO 
-            _was_absent := NOT _was_present GO 
-            _check_in := NULL GO 
-            _check_out := NULL GO 
-            _overtime_hours := 0 GO 
-            _reason := '' GO 
+	SET @attendance_date = '2015-9-29'
+	WHILE @attendance_date <= '2016-9-1' BEGIN
+
+	IF CURSOR_STATUS('global','employee_ids')>=-1
+	BEGIN
+		DEALLOCATE employee_ids
+	END
+	DECLARE employee_ids CURSOR FOR
+	SELECT employee_id       
+	FROM hrm.employees
+    
+		OPEN employee_ids 
+		FETCH NEXT FROM employee_ids INTO @employee_id
+		WHILE @@FETCH_STATUS = 0  BEGIN 
+            SET @was_present = cast(cast(rand() as integer) as bit) 
+            SET @was_absent =  CASE WHEN @was_present = 0 THEN 1 ELSE 0 END
+            SET @check_in = NULL 
+            SET @check_out = NULL 
+            SET @overtime_hours = 0 
+            SET @reason = '' 
             
-            IF(@was_present) THEN
-                _check_in := ('2015-09-30 09:46:19.443+00'::timestamp - '1 minute'::INTERVAL * ROUND(RANDOM() * 100))::time GO 
-                _check_out := ('2015-09-30 16:46:19.443+00'::timestamp - '1 minute'::INTERVAL * ROUND(RANDOM() * 100))::time GO 
-                _overtime_hours := round(random()) GO 
+            IF (@was_present=1) BEGIN
+                SET @check_in = DATEADD(minute, ROUND(RAND() * 100,0), CAST('2015-09-30 09:46:19.443+00' AS datetime))
+                SET @check_out = DATEADD(minute,ROUND(RAND() * 100,0), CAST('2015-09-30 16:46:19.443+00' AS datetime)) 
+                SET @overtime_hours = round(rand(),0)
+			END
             ELSE
-                _reason := '' GO 
-            END IF GO 
-            
-            
-            RAISE NOTICE '% %', _employee_id, _attendance_date GO 
+                SET @reason = '' 
+
+           
             INSERT INTO hrm.attendances(office_id, employee_id, attendance_date, was_present, check_in_time, check_out_time, overtime_hours, was_absent, reason_for_absenteeism)
-            SELECT 2, _employee_id, _attendance_date, _was_present, _check_in, _check_out, _overtime_hours, _was_absent, _reason GO 
-        END LOOP GO         
-    END LOOP GO 
+            VALUES (1, @employee_id, @attendance_date, @was_present, @check_in, @check_out, @overtime_hours, @was_absent, @reason)
+			FETCH NEXT FROM employee_ids INTO @employee_id
+        END
+		CLOSE employee_ids 
+		         
+		SET @attendance_date = DATEADD(day,1,@attendance_date)
+    END 
 END
 
 GO 
 
 
 -->-->-- C:/Users/nirvan/Desktop/mixerp/0. GitHub/src/FrontEnd/Modules/HRM/db/1.5/db/src/99.sample/kanban.sql --<--<--
-DO
 
-    DECLARE objects text[] GO 
-    DECLARE users int[] GO 
-    DECLARE _user_id int GO 
-    DECLARE _obj text GO 
+
 BEGIN
-    SELECT array_agg(user_id)
-        INTO users
-    FROM office.users INNER JOIN office.roles ON office.users.role_id = office.roles.role_id AND NOT is_system GO 
+    DECLARE @user_id int
+    DECLARE @obj varchar(500)
+	DECLARE @objects TABLE (object varchar(100))
 
-    objects := array[
-        'hrm.employees', 
-        'hrm.employment_statuses',
-        'hrm.salaries',
-        'hrm.wage_setup',
-        'hrm.employee_type_scrud_view',
-        'hrm.employee_identification_detail_scrud_view',
-        'hrm.employee_social_network_detail_scrud_view',
-        'hrm.employee_experience_scrud_view',
-        'hrm.employee_qualification_scrud_view',
-        'hrm.employee_wage_scrud_view',
-        'hrm.leave_application_scrud_view',
-        'hrm.contract_scrud_view',
-        'hrm.exit_scrud_view',
-        'hrm.education_levels',
-        'hrm.job_titles',
-        'hrm.pay_grades',
-        'hrm.salary_types',
-        'hrm.shifts',
-        'hrm.office_hour_scrud_view',
-        'hrm.leave_types',
-        'hrm.leave_benefits',
-        'hrm.exit_types',
-        ''
-        
-        
-        ] GO 
+    INSERT INTO @objects 
+    SELECT 'hrm.employees' UNION ALL
+	SELECT 'hrm.employment_statuses' UNION ALL
+    SELECT 'hrm.salaries' UNION ALL
+	SELECT 'hrm.wage_setup' UNION ALL
+    SELECT 'hrm.employee_type_scrud_view' UNION ALL
+    SELECT 'hrm.employee_identification_detail_scrud_view' UNION ALL
+    SELECT 'hrm.employee_social_network_detail_scrud_view' UNION ALL
+    SELECT 'hrm.employee_experience_scrud_view' UNION ALL
+    SELECT 'hrm.employee_qualification_scrud_view' UNION ALL
+    SELECT 'hrm.employee_wage_scrud_view' UNION ALL
+    SELECT 'hrm.leave_application_scrud_view' UNION ALL
+    SELECT 'hrm.contract_scrud_view' UNION ALL
+    SELECT 'hrm.exit_scrud_view' UNION ALL
+    SELECT 'hrm.education_levels' UNION ALL
+    SELECT 'hrm.job_titles' UNION ALL
+    SELECT 'hrm.pay_grades' UNION ALL
+    --SELECT 'hrm.salary_types' UNION ALL
+    SELECT 'hrm.shifts' UNION ALL
+    --SELECT 'hrm.office_hour_scrud_view' UNION ALL
+    SELECT 'hrm.leave_types' UNION ALL
+    SELECT'hrm.leave_benefits' UNION ALL
+    SELECT 'hrm.exit_types' UNION ALL
+    SELECT ''
 
-    IF(@user_id IS NULL) THEN
-        RETURN GO 
-    END IF GO 
 
-    FOREACH _user_id IN ARRAY users
-    LOOP
-        FOREACH _obj IN ARRAY objects
-        LOOP
-            PERFORM core.create_kanban(@obj, _user_id, 'Checklist') GO 
-            PERFORM core.create_kanban(@obj, _user_id, 'High Priority') GO 
-            PERFORM core.create_kanban(@obj, _user_id, 'Done') GO 
-        END LOOP GO 
-    END LOOP GO 
+	DECLARE myobjects CURSOR FOR
+    SELECT object
+    FROM @objects
+
+
+	DECLARE users CURSOR FOR
+    SELECT user_id
+    FROM office.users INNER JOIN office.roles ON office.users.role_id = office.roles.role_id AND is_system=0 
+	OPEN users 
+	FETCH NEXT FROM users INTO @user_id
+	WHILE @@FETCH_STATUS = 0  BEGIN 
+		OPEN myobjects
+		FETCH NEXT FROM myobjects INTO @obj
+		WHILE @@FETCH_STATUS = 0  BEGIN 
+            EXEC core.create_kanban @obj, @user_id, 'Checklist'
+            EXEC core.create_kanban @obj, @user_id, 'High Priority'
+            EXEC core.create_kanban @obj, @user_id, 'Done'
+			FETCH NEXT FROM myobjects INTO @obj
+		END
+		CLOSE myobjects
+		FETCH NEXT FROM users INTO @user_id
+	END
+	CLOSE users
 END
-
 GO 
